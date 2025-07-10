@@ -34,20 +34,31 @@
         </swiper>
     
   </section>
-  <!-- before/after slider section -->
-  <section class="before_after_slider">
-    <h2 class="text_student_work">До/После</h2>
-    <div class="before-after-container">
-      <div class="before-img">
-        <img src="./assets/before_after_img/before.png" alt="До" />
-        <span class="label">До</span>
+  <section class="before_after_slider_block">
+  <h2 class="text_student_work">До/После</h2>
+  <div
+    class="before_after_slider"
+    ref="slider"
+    @mousedown="startDrag"
+    @touchstart="startDrag"
+  >
+    <div
+      class="slider_before"
+      :style="{ width: beforeWidth + '%' }"
+    >
+      <div
+        class="slider_resize"
+        @mousedown.stop.prevent="startDrag"
+        @touchstart.stop.prevent="startDrag"
+      >
       </div>
-      <div class="after-img">
-        <img src="./assets/before_after_img/after.png" alt="После" />
-        <span class="label">После</span>
-      </div>
-      <div class="slider-bar" id="sliderBar"></div>
     </div>
+    <div class="slider_after"></div>
+  </div>
+</section>
+  <section class="footer">
+    <p>© 2023 BigDesign. All rights reserved.</p>
+    <p>Privacy Policy | Terms of Service</p>
   </section>
 </template>
 
@@ -72,32 +83,12 @@ export default {
   },
   data() {
     return {
-      heroBackground: `url(${heroBg})`
+      heroBackground: `url(${heroBg})`,
+      beforeWidth: 50,
+      dragging: false,
     }
   },
   mounted() {
-    // before/after slider logic
-    const container = document.querySelector('.before-after-container');
-    const afterImg = container.querySelector('.after-img');
-    const slider = container.querySelector('.slider-bar');
-    let isDragging = false;
-    slider.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      document.body.style.userSelect = 'none';
-    });
-    window.addEventListener('mouseup', () => {
-      isDragging = false;
-      document.body.style.userSelect = '';
-    });
-    window.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
-      const rect = container.getBoundingClientRect();
-      let offsetX = e.clientX - rect.left;
-      offsetX = Math.max(0, Math.min(offsetX, rect.width));
-      const percent = (offsetX / rect.width) * 100;
-      afterImg.style.width = percent + '%';
-      slider.style.left = percent + '%';
-    });
     // scroll logic
     const navbar = document.querySelector('.navbar');
     window.addEventListener('scroll', () => {
@@ -107,7 +98,42 @@ export default {
         navbar.classList.remove('scrolled');
       }
     });
-  }
+
+    // Drag logic for before/after slider
+    window.addEventListener('mousemove', this.onDrag);
+    window.addEventListener('mouseup', this.stopDrag);
+    window.addEventListener('touchmove', this.onDrag);
+    window.addEventListener('touchend', this.stopDrag);
+  },
+  beforeUnmount() {
+    window.removeEventListener('mousemove', this.onDrag);
+    window.removeEventListener('mouseup', this.stopDrag);
+    window.removeEventListener('touchmove', this.onDrag);
+    window.removeEventListener('touchend', this.stopDrag);
+  },
+  methods: {
+    startDrag(e) {
+      this.dragging = true;
+      this.onDrag(e);
+    },
+    stopDrag() {
+      this.dragging = false;
+    },
+    onDrag(e) {
+      if (!this.dragging) return;
+      let clientX;
+      if (e.touches && e.touches.length) {
+        clientX = e.touches[0].clientX;
+      } else {
+        clientX = e.clientX;
+      }
+      const slider = this.$refs.slider;
+      const rect = slider.getBoundingClientRect();
+      let percent = ((clientX - rect.left) / rect.width) * 100;
+      percent = Math.max(0, Math.min(100, percent));
+      this.beforeWidth = percent;
+    },
+  },
 }
 </script>
 
@@ -306,68 +332,72 @@ export default {
   transform: translateX(2px);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
 }
-
-.before-after-container {
-  position: relative;
-  width: 600px;
-  max-width: 90vw;
-  height: 350px;
-  margin: 40px auto 0 auto;
-  overflow: hidden;
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.2);
-  background: #222;
+.before_after_slider_block {
+  width: 100%;
   display: flex;
-  align-items: center;
   justify-content: center;
+  flex-direction: column;
+  align-items: center;
 }
-.before-after-container .before-img,
-.before-after-container .after-img {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  overflow: hidden;
+.before_after_slider {
+  width: 1024px;
+  height: 512px;
+  position: relative;
+  background: lightcoral;
 }
-.before-after-container .before-img img {
-  width: 100%; height: 100%; object-fit: cover;
-  filter: grayscale(0.7);
-}
-.before-after-container .after-img {
+.slider_before {
   width: 50%;
-  clip-path: inset(0 0 0 0); /* Показываем только половину */
-  z-index: 2;
+    height: 100%;
+    position: absolute;
+    z-index: 2;
+    background: url('./assets/before_after_img/after.png') no-repeat center center fixed;
+    background-size: cover;
 }
-.before-after-container .after-img img {
-  width: 100%; height: 100%; object-fit: cover;
-}
-.before-after-container .slider-bar {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  width: 4px;
+.slider_after {
+  width: 100%;
   height: 100%;
-  background: #fff;
-  z-index: 3;
-  cursor: ew-resize;
-  border-radius: 2px;
-  box-shadow: 0 0 8px #fff;
-  transition: background 0.2s;
-}
-.before-after-container .label {
   position: absolute;
-  top: 10px;
-  left: 20px;
-  background: rgba(0,0,0,0.5);
-  color: #fff;
-  padding: 4px 12px;
-  border-radius: 8px;
-  font-size: 1rem;
-  z-index: 4;
+  z-index: 1;
+  background: url('./assets/before_after_img/before.png') no-repeat center center fixed;
+  background-size: cover;
 }
-.before-after-container .after-img .label {
-  left: auto;
+.slider_resize {
+  width: 5px;
+  height: 100%;
+  position: absolute;
+  right: 0;
+  top: 0;
+  cursor: ew-resize;
+  background: rgba(255, 255, 255, 0.5);
+  z-index: 10;
+  /* стрелки будут псевдоэлементами */
+}
+
+.slider_resize::before,
+.slider_resize::after {
+  position: absolute;
+  color: wheat;
+  font-size: 30px;
+  font-weight: 900;
+  user-select: none;
+  pointer-events: none;
+  line-height: 1;
+}
+
+.slider_resize::before {
+
+  content: '<';
   right: 20px;
+  top: 50%;
 }
+
+.slider_resize::after {
+  content: '>';
+  left: 20px;
+  top: 50%;
+}
+
+
 </style>
 
 
