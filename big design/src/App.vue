@@ -343,7 +343,7 @@ export default {
   width: 1024px;
   height: 512px;
   position: relative;
-  background: lightcoral;
+  /* background: lightcoral; */
 }
 .slider_before {
   width: 50%;
