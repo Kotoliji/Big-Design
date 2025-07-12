@@ -6,30 +6,72 @@
             <ul class="nav-links">
                 <li><a href="#student_work_section">Роботи учнів</a></li>
                 <li><a href="#">Тарифи</a></li>
-                <li><a href="#">Етапи навчання</a></li>
+                <li><a href="#">Наши курсы</a></li>
                 <li><a href="#">Зворотній зв'язок</a></li>
             </ul>
             <button class="register-btn">Реєстрація</button>
         </nav>
         <div class = "header-info ">
-            <h1 class="main-title">BigDesign<br>первая VFX/CGI-платформа в СНГ</h1>
+            <h1 class="main-title">Здесь не Ctrl+V.<br> Здесь Ctrl+Творчество.</h1>
             <p class="subtext">Не учим рисовать.
 Учим создавать себя через искусство.</p>
         </div>
   </section>
   <section class="student_work_section" id="student_work_section">
   <h2 class="text_student_work">Галерея лучших работ </h2>      
-        <swiper :navigation="true" :modules="modules"  :slides-per-view="1.2"
+        <swiper :navigation="true" :modules="modules"
+        :slides-per-view="1"
         centered-slides 
         loop
         autoHeight = "true"
         space-between="60"
-        class="mySwiper">
+        class="mySwiper"
+        >
         
-          <swiper-slide><img src="./assets/studentsWork/Untitled (5).png" alt="kids do this model " width="360" height="200"></swiper-slide>
-          <swiper-slide><img src="./assets/studentsWork/Untitled (1).png" alt="kids do this model " width="360" height="200"></swiper-slide>
-          <swiper-slide><img src="./assets/studentsWork/Untitled (2).png" alt="kids do this model " width="360" height="200"></swiper-slide>
-          <swiper-slide><img src="./assets/studentsWork/Untitled (3).png" alt="kids do this model " width="360" height="200"></swiper-slide>
+          <swiper-slide class="swiper-wrapper">
+            <div class="swiper-slide-content">
+              <iframe
+                style="border-radius: 10%;"
+                width="100%"
+                height="300"
+                
+                src="https://www.youtube.com/watch?v=CiQBuXejMrU&ab_channel=BratishkinRofls"
+                title="YouTube video"
+                frameborder="0"
+                allowfullscreen
+              ></iframe>
+              <div class="swiper-slide-text">
+                <img src="./assets/student_photo.jpg" alt="photo of students" width="100" height="100" > 
+                <div class="swiper-text-block">
+                  <h3>Илья Садовский</h3>
+                  <p style="font-size: small;">До этого я проходил бесплатные уроки на YouTube, но они не давали мне чёткого понимания и пошагового плана действий. Я не знал, как правильно что-то делать. Если бы я продолжал слушать советы от случайных комментаторов, у меня бы ничего не получилось...</p>
+                  <button type="button" class="button-reveal">Раскрить</button>
+                </div>
+              </div>
+            </div>
+          </swiper-slide>
+          <swiper-slide class="swiper-wrapper">
+            <div class="swiper-slide-content">
+              <iframe
+                style="border-radius: 10%;"
+                width="100%"
+                height="250"
+                
+                src="https://www.youtube.com/watch?v=CiQBuXejMrU&ab_channel=BratishkinRofls"
+                title="YouTube video"
+                frameborder="0"
+                allowfullscreen
+              ></iframe>
+              <div class="swiper-slide-text">
+                <img src="./assets/student_photo.jpg" alt="photo of students" width="100" height="100" > 
+                <div class="swiper-text-block">
+                  <h3>Илья Садовский</h3>
+                  <p style="font-size: small;">До этого я проходил бесплатные уроки на YouTube, но они не давали мне чёткого понимания и пошагового плана действий. Я не знал, как правильно что-то делать. Если бы я продолжал слушать советы от случайных комментаторов, у меня бы ничего не получилось...</p>
+                  <button type="button" class="button-reveal">Раскрить</button>
+                </div>
+              </div>
+            </div>
+          </swiper-slide>
           
         </swiper>
     
@@ -53,15 +95,32 @@
       >
       </div>
     </div>
-    <div class="slider_after"></div>
-  </div>
-</section>
-  <section class="footer">
-    <p>© 2023 BigDesign. All rights reserved.</p>
-    <p>Privacy Policy | Terms of Service</p>
+      <div class="slider_after"></div>
+    </div>
   </section>
+  <section class="our_product_bloc">
+    <p>Наши курси</p>
+    <div class="our_product">
+      <div  class="our_product_item">
+        <img src="" alt="">
+        <span>
+          <h3>Курс 1</h3>
+          <button type="button"></button>
+        </span>
+        <div>
+         <p></p>
+         <p></p>
+         <p></p>
+         <p></p>
+        </div>
+        <div class="our_product_futer_button">
+          <button type="button"></button>
+          <button type="button"></button>
+        </div>
+      </div>
+    </div>
+  </section>  
 </template>
-
 <script>
 import heroBg from './assets/HeaderImg.avif'
 import { Swiper, SwiperSlide } from 'swiper/vue';
@@ -262,20 +321,19 @@ export default {
 
 }
  .swiper {
-  width: 100%;
+  width: 40%;
+  height: 700px;
   display: flex;
- 
   justify-content: flex-end; 
 }
-
-.swiper-slide {
+.swiper-wrapper {
+  height: 100%;
   text-align: center;
-  font-size: 18px;
-  background: #444;
+  font-size: 25px;
+
   display: flex;
   justify-content: center;
   align-items: center;
-  
   filter: blur(6px);
   opacity: 0.6;
   transition: filter 0.5s ease, opacity 0.5s ease;
@@ -283,14 +341,77 @@ export default {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+
+}
+
+.swiper-slide-content{
+   align-items: flex-start;
+    background-color: #0a1e42;
+  border-radius: 10%;
+
 }
 
 .swiper-slide img {
-  
-  width: 500%;
-  height: 500px;
+  border-radius: 10%;
+  width:25%;
+  height: 25%;
   object-fit: cover;
+  margin-left: 5%;
+  margin-top: 2%;
 }
+.swiper-slide-text{
+  margin-top: 2%;
+  display: flex;
+  flex-direction: row;
+  /* align-items: center; */
+  justify-content: right;
+  text-align: left;
+  gap: 20px;
+}
+.swiper-text-block{
+  font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+  color: #cfd9f5; /* світлий текст */
+  padding: 16px;
+  border-radius: 8px;
+  max-width: 400px;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 20px;
+  
+}
+.swiper-text-block h3 {
+  /* line-height: 0.5; */
+  font-size:larger;   
+  margin: 0;
+
+  font-weight: bold;
+  color: white;
+}
+.swiper-text-block p {
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0;
+}
+.button-reveal {
+  background-color: #1f66c1;      
+  color: #ffffff;
+  padding: 10px 26px;             
+  border: none;
+  border-radius: 24px;            
+  font-size: 13px;                
+  font-family: 'Segoe UI', sans-serif;
+  font-weight: 600;               
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button-reveal:hover {
+  background-color: #3783e0;      
+}
+
 
 .swiper-slide-active {
   filter: blur(0);
@@ -397,6 +518,9 @@ export default {
   top: 50%;
 }
 
+.our_product_bloc{
+
+}
 
 </style>
 
