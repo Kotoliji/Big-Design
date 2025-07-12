@@ -19,15 +19,16 @@
   </section>
   <section class="student_work_section" id="student_work_section">
   <h2 class="text_student_work">Галерея лучших работ </h2>      
-        <swiper :navigation="true" :modules="modules"
-        :slides-per-view="1"
-        centered-slides 
-        loop
-        autoHeight = "true"
-        space-between="60"
-        class="mySwiper"
-        >
         
+        <swiper
+          autoHeight = "true"
+          :navigation="true"
+          :modules="modules"
+          :slides-per-view="4"
+          :space-between="30"
+          :loop="true"
+          class="mySwiper"
+        >
           <swiper-slide class="swiper-wrapper">
             <div class="swiper-slide-content">
               <iframe
@@ -56,6 +57,72 @@
                 style="border-radius: 10%;"
                 width="100%"
                 height="250"
+                
+                src="https://www.youtube.com/watch?v=CiQBuXejMrU&ab_channel=BratishkinRofls"
+                title="YouTube video"
+                frameborder="0"
+                allowfullscreen
+              ></iframe>
+              <div class="swiper-slide-text">
+                <img src="./assets/student_photo.jpg" alt="photo of students" width="100" height="100" > 
+                <div class="swiper-text-block">
+                  <h3>Илья Садовский</h3>
+                  <p style="font-size: small;">До этого я проходил бесплатные уроки на YouTube, но они не давали мне чёткого понимания и пошагового плана действий. Я не знал, как правильно что-то делать. Если бы я продолжал слушать советы от случайных комментаторов, у меня бы ничего не получилось...</p>
+                  <button type="button" class="button-reveal">Раскрить</button>
+                </div>
+              </div>
+            </div>
+          </swiper-slide>
+          <swiper-slide class="swiper-wrapper">
+            <div class="swiper-slide-content">
+              <iframe
+                style="border-radius: 10%;"
+                width="100%"
+                height="300"
+                
+                src="https://www.youtube.com/watch?v=CiQBuXejMrU&ab_channel=BratishkinRofls"
+                title="YouTube video"
+                frameborder="0"
+                allowfullscreen
+              ></iframe>
+              <div class="swiper-slide-text">
+                <img src="./assets/student_photo.jpg" alt="photo of students" width="100" height="100" > 
+                <div class="swiper-text-block">
+                  <h3>Илья Садовский</h3>
+                  <p style="font-size: small;">До этого я проходил бесплатные уроки на YouTube, но они не давали мне чёткого понимания и пошагового плана действий. Я не знал, как правильно что-то делать. Если бы я продолжал слушать советы от случайных комментаторов, у меня бы ничего не получилось...</p>
+                  <button type="button" class="button-reveal">Раскрить</button>
+                </div>
+              </div>
+            </div>
+          </swiper-slide>
+          <swiper-slide class="swiper-wrapper">
+            <div class="swiper-slide-content">
+              <iframe
+                style="border-radius: 10%;"
+                width="100%"
+                height="300"
+                
+                src="https://www.youtube.com/watch?v=CiQBuXejMrU&ab_channel=BratishkinRofls"
+                title="YouTube video"
+                frameborder="0"
+                allowfullscreen
+              ></iframe>
+              <div class="swiper-slide-text">
+                <img src="./assets/student_photo.jpg" alt="photo of students" width="100" height="100" > 
+                <div class="swiper-text-block">
+                  <h3>Илья Садовский</h3>
+                  <p style="font-size: small;">До этого я проходил бесплатные уроки на YouTube, но они не давали мне чёткого понимания и пошагового плана действий. Я не знал, как правильно что-то делать. Если бы я продолжал слушать советы от случайных комментаторов, у меня бы ничего не получилось...</p>
+                  <button type="button" class="button-reveal">Раскрить</button>
+                </div>
+              </div>
+            </div>
+          </swiper-slide>
+          <swiper-slide class="swiper-wrapper">
+            <div class="swiper-slide-content">
+              <iframe
+                style="border-radius: 10%;"
+                width="100%"
+                height="300"
                 
                 src="https://www.youtube.com/watch?v=CiQBuXejMrU&ab_channel=BratishkinRofls"
                 title="YouTube video"
@@ -321,12 +388,13 @@ export default {
 
 }
  .swiper {
-  width: 40%;
+  width: 100%;
   height: 700px;
   display: flex;
   justify-content: flex-end; 
 }
 .swiper-wrapper {
+  /* width: 100%; */
   height: 100%;
   text-align: center;
   font-size: 25px;
@@ -334,9 +402,9 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  filter: blur(6px);
+  filter: blur(0);
   opacity: 0.6;
-  transition: filter 0.5s ease, opacity 0.5s ease;
+  /* transition: filter 0.5s ease, opacity 0.5s ease; */
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -414,7 +482,7 @@ export default {
 
 
 .swiper-slide-active {
-  filter: blur(0);
+  /* filter: blur(0); */
   opacity: 1;
 }
 
