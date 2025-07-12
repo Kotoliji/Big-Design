@@ -18,29 +18,25 @@
         </div>
   </section>
   <section class="student_work_section" id="student_work_section">
-  <h2 class="text_student_work">Галерея лучших работ </h2>      
+       <h2 class="text_student_work">Галерея лучших работ </h2> 
         
         <swiper
           autoHeight = "true"
           :navigation="true"
           :modules="modules"
-          :slides-per-view="4"
+          :slides-per-view="3.2"
           :space-between="30"
           :loop="true"
           class="mySwiper"
         >
+        
+        
           <swiper-slide class="swiper-wrapper">
             <div class="swiper-slide-content">
-              <iframe
-                style="border-radius: 10%;"
-                width="100%"
-                height="300"
-                
-                src="https://www.youtube.com/watch?v=CiQBuXejMrU&ab_channel=BratishkinRofls"
-                title="YouTube video"
-                frameborder="0"
-                allowfullscreen
-              ></iframe>
+              <div>
+              <video src="./assets/video.mp4" controls width="100%" loop preload="metadata"  class="swiper-video-preview"></video>
+              </div>
+              <!-- poster="./assets/HeaderImg.avif" -->
               <div class="swiper-slide-text">
                 <img src="./assets/student_photo.jpg" alt="photo of students" width="100" height="100" > 
                 <div class="swiper-text-block">
@@ -53,16 +49,10 @@
           </swiper-slide>
           <swiper-slide class="swiper-wrapper">
             <div class="swiper-slide-content">
-              <iframe
-                style="border-radius: 10%;"
-                width="100%"
-                height="250"
-                
-                src="https://www.youtube.com/watch?v=CiQBuXejMrU&ab_channel=BratishkinRofls"
-                title="YouTube video"
-                frameborder="0"
-                allowfullscreen
-              ></iframe>
+              <div>
+              <video src="./assets/video.mp4" controls width="100%" loop preload="metadata"  class="swiper-video-preview"></video>
+              </div>
+              <!-- poster="./assets/HeaderImg.avif" -->
               <div class="swiper-slide-text">
                 <img src="./assets/student_photo.jpg" alt="photo of students" width="100" height="100" > 
                 <div class="swiper-text-block">
@@ -75,16 +65,10 @@
           </swiper-slide>
           <swiper-slide class="swiper-wrapper">
             <div class="swiper-slide-content">
-              <iframe
-                style="border-radius: 10%;"
-                width="100%"
-                height="300"
-                
-                src="https://www.youtube.com/watch?v=CiQBuXejMrU&ab_channel=BratishkinRofls"
-                title="YouTube video"
-                frameborder="0"
-                allowfullscreen
-              ></iframe>
+              <div>
+              <video src="./assets/video.mp4" controls width="100%" loop preload="metadata"  class="swiper-video-preview"></video>
+              </div>
+              <!-- poster="./assets/HeaderImg.avif" -->
               <div class="swiper-slide-text">
                 <img src="./assets/student_photo.jpg" alt="photo of students" width="100" height="100" > 
                 <div class="swiper-text-block">
@@ -97,16 +81,10 @@
           </swiper-slide>
           <swiper-slide class="swiper-wrapper">
             <div class="swiper-slide-content">
-              <iframe
-                style="border-radius: 10%;"
-                width="100%"
-                height="300"
-                
-                src="https://www.youtube.com/watch?v=CiQBuXejMrU&ab_channel=BratishkinRofls"
-                title="YouTube video"
-                frameborder="0"
-                allowfullscreen
-              ></iframe>
+              <div>
+              <video src="./assets/video.mp4" controls width="100%" loop preload="metadata"  class="swiper-video-preview"></video>
+              </div>
+              <!-- poster="./assets/HeaderImg.avif" -->
               <div class="swiper-slide-text">
                 <img src="./assets/student_photo.jpg" alt="photo of students" width="100" height="100" > 
                 <div class="swiper-text-block">
@@ -119,16 +97,26 @@
           </swiper-slide>
           <swiper-slide class="swiper-wrapper">
             <div class="swiper-slide-content">
-              <iframe
-                style="border-radius: 10%;"
-                width="100%"
-                height="300"
-                
-                src="https://www.youtube.com/watch?v=CiQBuXejMrU&ab_channel=BratishkinRofls"
-                title="YouTube video"
-                frameborder="0"
-                allowfullscreen
-              ></iframe>
+              <div>
+              <video src="./assets/video.mp4" controls width="100%" loop preload="metadata"  class="swiper-video-preview"></video>
+              </div>
+              <!-- poster="./assets/HeaderImg.avif" -->
+              <div class="swiper-slide-text">
+                <img src="./assets/student_photo.jpg" alt="photo of students" width="100" height="100" > 
+                <div class="swiper-text-block">
+                  <h3>Илья Садовский</h3>
+                  <p style="font-size: small;">До этого я проходил бесплатные уроки на YouTube, но они не давали мне чёткого понимания и пошагового плана действий. Я не знал, как правильно что-то делать. Если бы я продолжал слушать советы от случайных комментаторов, у меня бы ничего не получилось...</p>
+                  <button type="button" class="button-reveal">Раскрить</button>
+                </div>
+              </div>
+            </div>
+          </swiper-slide>
+          <swiper-slide class="swiper-wrapper">
+            <div class="swiper-slide-content">
+              <div>
+              <video src="./assets/video.mp4" controls width="100%" loop preload="metadata"  class="swiper-video-preview"></video>
+              </div>
+              <!-- poster="./assets/HeaderImg.avif" -->
               <div class="swiper-slide-text">
                 <img src="./assets/student_photo.jpg" alt="photo of students" width="100" height="100" > 
                 <div class="swiper-text-block">
@@ -372,6 +360,7 @@ export default {
   max-width: 600px;
 }
 .student_work_section {
+    margin-left: 10%;
     color: aliceblue;
     background-color: #000;
     padding: 100px 20px;
@@ -382,8 +371,8 @@ export default {
   font-family: "Libertinus Mono", monospace;
   font-size: 2.5rem;
   margin-bottom: 40px;
-  margin-left: 10%;
   font-weight: lighter;
+  justify-content: left;
 
 
 }
@@ -392,6 +381,7 @@ export default {
   height: 700px;
   display: flex;
   justify-content: flex-end; 
+
 }
 .swiper-wrapper {
   /* width: 100%; */
@@ -403,8 +393,8 @@ export default {
   justify-content: center;
   align-items: center;
   filter: blur(0);
-  opacity: 0.6;
-  /* transition: filter 0.5s ease, opacity 0.5s ease; */
+  /* opacity: 0.6; */
+  transition: filter 0.5s ease, opacity 0.5s ease;
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -414,15 +404,25 @@ export default {
 
 .swiper-slide-content{
    align-items: flex-start;
-    background-color: #0a1e42;
+   /* background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); */
+   /* background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); */
+   /* background: linear-gradient(135deg, #064e3b 0%, #065f46 100%); */
+   background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+   /* background: linear-gradient(135deg, #2c2f33 0%, #23272a 100%); */
+
+
   border-radius: 10%;
 
+}
+.swiper-video-preview{
+  object-fit: cover;
+  border-radius: 5%;
 }
 
 .swiper-slide img {
   border-radius: 10%;
-  width:25%;
-  height: 25%;
+  width: 130px;
+  height: 130px;
   object-fit: cover;
   margin-left: 5%;
   margin-top: 2%;
@@ -447,7 +447,7 @@ export default {
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  gap: 20px;
+  gap: 10px;
   
 }
 .swiper-text-block h3 {
@@ -481,17 +481,12 @@ export default {
 }
 
 
-.swiper-slide-active {
-  /* filter: blur(0); */
-  opacity: 1;
-}
-
 :deep(.swiper-button-next){
-  right: 20%; 
+  right: 45%; 
 
 }
 :deep(.swiper-button-prev) {
- left: 70%;
+ left: 35%;
 }
 :deep(.swiper-button-next),
 :deep(.swiper-button-prev) {
@@ -505,7 +500,7 @@ export default {
  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
  transition: all 0.3s ease;
  
- top: 5%;
+ top: 4%;
 }
 
  :deep(.swiper-button-next::after),
@@ -521,6 +516,9 @@ export default {
   transform: translateX(2px);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
 }
+
+
+
 .before_after_slider_block {
   width: 100%;
   display: flex;
