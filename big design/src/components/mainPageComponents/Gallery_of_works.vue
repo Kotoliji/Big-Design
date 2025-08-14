@@ -1,486 +1,460 @@
 <template>
-  <section class="student_work_section" id="student_work_section">
-    <div class="section-title">
-        <h2 class="text_student_work">Галерея лучших работ</h2>
-    </div>
-    <swiper
-      autoHeight="true"
-      :navigation="true"
-      :modules="modules"
-      :slides-per-view="3.2"
-      :space-between="30"
-      :loop="true"
-      class="mySwiper"
-    >
-      <swiper-slide
-        v-for="(student, idx) in students"
-        :key="idx"
-        class="swiper-wrapper"
-      >
-        <div class="swiper-slide-content">
-          <div>
-            <video :src="student.video" controls width="100%" loop preload="metadata" class="swiper-video-preview"></video>
+  <section id="student_work_section" class="works-gallery">
+    <div class="container">
+      <div class="section-title">
+        <h2 class="section-title-text">Работы учеников</h2>
+      </div>
+      <ul class="cards" role="list">
+        <li v-for="item in catalog" :key="item.slug" class="card">
+          <div
+            class="card-link"
+            :aria-label="item.title"
+            @click="open(item)"
+            @mouseenter="playVideo(item.slug)"
+            @mouseleave="pauseVideo(item.slug)"
+          >
+            <div class="video-wrap">
+              <video
+                :id="`video-${item.slug}`"
+                :src="item.video"
+                muted
+                preload="metadata"
+                loop
+                playsinline
+              ></video>
+            </div>
+            <div class="meta">
+              <h3 class="title">{{ item.title }}</h3>
+              <p class="tag">{{ item.tag }}</p>
+            </div>
           </div>
-          <div class="swiper-slide-text">
-            <img :src="student.photo" :alt="`photo of ${student.name}`" width="100" height="100">
-            <div class="swiper-text-block">
-              <h3>{{ student.name }}</h3>
-              <p style="font-size: small;">{{ student.short }}</p>
-              <button type="button" class="button-reveal" @click="openModal(idx)">Раскрить</button>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Деталі роботи як модальне вікно (БЕЗ роутера) -->
+    <transition name="fade">
+      <div v-if="selected" class="overlay" @click.self="close">
+        <div
+          class="sheet"
+          role="dialog"
+          aria-modal="true"
+          :aria-label="selected.title"
+        >
+          <button class="close" @click="close" aria-label="Close">×</button>
+
+          <header class="head">
+            <div class="left">
+              <h1 class="d-title">{{ selected.title }}</h1>
+              <p v-if="selected.subtitle" class="d-sub">
+                {{ selected.subtitle }}
+              </p>
+            </div>
+            <aside class="right">
+              <h2 class="meta-title">Project Details</h2>
+              <p v-if="selected.description" class="desc">
+                {{ selected.description }}
+              </p>
+              <ul class="kv">
+                <li>
+                  <span>Client</span><b>{{ selected.client || "—" }}</b>
+                </li>
+                <li>
+                  <span>Category</span><b>{{ selected.category || "—" }}</b>
+                </li>
+                <li>
+                  <span>Year</span><b>{{ selected.year || "—" }}</b>
+                </li>
+              </ul>
+            </aside>
+          </header>
+
+          <div class="media" v-if="selected.video">
+            <div class="video-frame">
+              <video
+                ref="detailVideo"
+                :src="selected.video"
+                playsinline
+                preload="metadata"
+                class="hero-video"
+                autoplay
+                muted
+              ></video>
+              <button
+                class="fs-btn"
+                @click="goFullscreen"
+                aria-label="Full screen"
+              ></button>
             </div>
           </div>
         </div>
-      </swiper-slide>
-      
-    </swiper>
-   <div v-if="activeStudent !== null" class="student-modal-overlay" @click.self="closeModal">
-  <div class="student-modal">
-    <div class="modal-left-block">
-      <div class="modal-header-row">
-        <img :src="students[activeStudent].photo" alt="student avatar" class="modal-avatar" />
-        <div>
-          <h2 class="modal-name">{{ students[activeStudent].name }}</h2>
-          <div class="modal-username">@{{ students[activeStudent].username }}</div>
-        </div>
       </div>
-      <div class="modal-body">
-        <p class="modal-about">{{ students[activeStudent].about }}</p>
-        <div class="modal-experience">
-          <div>
-            <strong>Опыт до обучения</strong>
-            <div>{{ students[activeStudent].before }}</div>
-          </div>
-          <div>
-            <strong>После обучения</strong>
-            <div>{{ students[activeStudent].after }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="modal-content-right">
-      <div class="modal-video">
-        <video :src="students[activeStudent].video" controls width="100%" loop preload="metadata"></video>
-      </div>
-    </div>
-    <button class="modal-close-btn" @click="closeModal">×</button>
-  </div>
-</div>
+    </transition>
   </section>
 </template>
 
-
 <script>
-// Импорты, необходимые для Swiper
-import { Swiper, SwiperSlide } from 'swiper/vue';
-import { Navigation, Pagination  } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-
 export default {
-  name: 'GalleryOfWorks',
-  components: { Swiper, SwiperSlide },
+  name: "GalleryOfWorks",
   data() {
     return {
-      modules: [Navigation],
-      activeStudent: null,
-      students: [
+      selected: null,
+      // Відео з public/gallery_of_works_video
+      catalog: [
         {
-          name: 'Илья Садовский',
-          username: 'ilya_sadovskiy',
-          photo: new URL('../../assets/student_photo.jpg', import.meta.url).href,
-          video: new URL('../../assets/video.mp4', import.meta.url).href,
-    
-          short: 'До этого я проходил бесплатные уроки на YouTube, но они не давали мне чёткого понимания и пошагового плана действий...',
-          about: 'Вы нередко можете увидеть новости о том, что кто-то создал очередной ремейк нашумевшей игры или топового сериала на Unreal Engine 5. Кто знает, может это буду я или ребята с моего потока. Если эта сфера интересна тебе, не откладывай этот момент и залетай на новые потоки. Исходя из собственного опыта, могу точно сказать, что практически любая идея, которая возникнет у тебя в голове, может реализоваться именно в Unreal Engine.',
-          before: 'Когда пришел в Мастерскую, не имел никакого опыта в 3D. Прошел буткемп Моушн.',
-          after: 'С еще одним учеником Мастерской основали продакшн. Работают над заказами из США, занимались графикой для короткометражного фильма Photon. Создали свою игру.'
+          slug: "mercedes",
+          title: "Mercedes",
+          tag: "Viral VFX",
+          category: "Viral VFX",
+          year: "2024",
+          client: "Mercedes",
+          subtitle: "Automotive viral VFX piece.",
+          description:
+            "Short viral VFX spot with seamless CG integration and tracked shots.",
+          video: "/gallery_of_works_video/01.mp4",
         },
         {
-         name: 'Александр Петров',
-          username: 'alex_petrov',
-          photo: new URL('../../assets/student_photo.jpg', import.meta.url).href,
-          video: new URL('../../assets/video.mp4', import.meta.url).href,
-          short: 'Я пришел в Мастерскую с нулевым опытом в 3D, но уже через несколько месяцев смог создать свой первый проект.',
-          about: 'Мастерская дала мне четкую структуру обучения и поддержку сообщества. Я научился создавать качественные 3D-модели и анимации, которые теперь использую в своих проектах.',
-          before: 'До обучения я работал в другой сфере и не имел опыта в 3D.',
-          after: 'После обучения я начал работать фрилансером и уже получил несколько заказов на создание 3D-моделей.'
+          slug: "marvels-spider-man-2",
+          title: "Marvel's Spider‑Man 2",
+          tag: "Viral VFX",
+          category: "Viral VFX",
+          year: "2024",
+          client: "—",
+          subtitle: "CGI stunt concept",
+          description:
+            "CG work inspired by the game IP. Focus on dynamics and compositing.",
+          video: "/gallery_of_works_video/02.mp4",
         },
         {
-          name: 'Мария Иванова',
-          username: 'maria_ivanova',
-          photo: new URL('../../assets/student_photo.jpg', import.meta.url).href,
-          video: new URL('../../assets/video.mp4', import.meta.url).href,  
-          short: 'Я всегда мечтала заниматься 3D-графикой, но не знала, с чего начать. Мастерская помогла мне найти свой путь.',
-          about: 'Благодаря курсам я научилась работать в Blender и Unreal Engine. Теперь я могу создавать свои собственные проекты и даже начала работать над заказами для клиентов.',
-          before: 'До обучения я была дизайнером интерьеров и не имела опыта в 3D.',
-          after: 'После обучения я начала работать в команде над созданием 3D моделей для игр и анимаций. Это стало моим новым увлечением и источником дохода.'
+          slug: "luciano-loco",
+          title: "Luciano Loco",
+          tag: "Motion Design",
+          category: "Motion Design",
+          year: "2024",
+          client: "Luciano Loco",
+          subtitle: "Merch CGI commercial",
+          description:
+            "Full CGI promo for merchandise aligned with album color palette.",
+          video: "/gallery_of_works_video/03.mp4",
         },
         {
-          name: 'Дмитрий Смирнов',
-          username: 'dmitry_smirnov',
-          photo: new URL('../../assets/student_photo.jpg', import.meta.url).href,
-          video: new URL('../../assets/video.mp4', import.meta.url).href,
-          short: 'Я пришел в Мастерскую с опытом в 2D-дизайне, но хотел расширить свои навыки и научиться работать в 3D.',
-          about: 'Курсы помогли мне освоить Blender и Unreal Engine. Я научился создавать качественные 3D-модели и анимации, которые теперь использую в своих проектах.',
-          before: 'До обучения я работал графическим дизайнером и не имел опыта в 3D.',
-          after: 'После обучения я начал работать фрилансером и уже получил несколько заказов на создание 3D-моделей.'
+          slug: "work-04",
+          title: "Project 04",
+          tag: "VFX",
+          category: "VFX",
+          year: "2024",
+          video: "/gallery_of_works_video/04.mp4",
         },
         {
-          name: 'Мария Иванова',
-          username: 'maria_ivanova',
-          photo: new URL('../../assets/student_photo.jpg', import.meta.url).href,
-          video: new URL('../../assets/video.mp4', import.meta.url).href,  
-          short: 'Я всегда мечтала заниматься 3D-графикой, но не знала, с чего начать. Мастерская помогла мне найти свой путь.',
-          about: 'Благодаря курсам я научилась работать в Blender и Unreal Engine. Теперь я могу создавать свои собственные проекты и даже начала работать над заказами для клиентов.',
-          before: 'До обучения я была дизайнером интерьеров и не имела опыта в 3D.',
-          after: 'После обучения я начала работать в команде над созданием 3D моделей для игр и анимаций. Это стало моим новым увлечением и источником дохода.'
+          slug: "work-05",
+          title: "Project 05",
+          tag: "VFX",
+          category: "VFX",
+          year: "2024",
+          video: "/gallery_of_works_video/05.mp4",
         },
-        
-      ]
-    }
+        {
+          slug: "work-06",
+          title: "Project 06",
+          tag: "VFX",
+          category: "VFX",
+          year: "2024",
+          video: "/gallery_of_works_video/06.mp4",
+        },
+        {
+          slug: "work-07",
+          title: "Project 07",
+          tag: "VFX",
+          category: "VFX",
+          year: "2024",
+          video: "/gallery_of_works_video/07.mp4",
+        },
+        {
+          slug: "work-08",
+          title: "Project 08",
+          tag: "VFX",
+          category: "VFX",
+          year: "2024",
+          video: "/gallery_of_works_video/08.mp4",
+        },
+      ],
+    };
   },
   methods: {
-    openModal(idx) { this.activeStudent = idx },
-    closeModal() { this.activeStudent = null }
-  }
-}
+    playVideo(slug) {
+      const video = document.getElementById(`video-${slug}`);
+      if (video) video.play();
+    },
+    pauseVideo(slug) {
+      const video = document.getElementById(`video-${slug}`);
+      if (video) video.pause();
+    },
+    open(item) {
+      this.selected = item;
+      // опціонально: блокуємо скрол сторінки, поки відкрита модалка
+      document.body.style.overflow = "hidden";
+    },
+    close() {
+      this.selected = null;
+      document.body.style.overflow = "";
+    },
+    onKey(e) {
+      if (e.key === "Escape" && this.selected) this.close();
+    },
+    goFullscreen() {
+      const v = this.$refs.detailVideo;
+      if (!v) return;
+      // iOS Safari
+      if (v.webkitEnterFullscreen) {
+        try {
+          v.webkitEnterFullscreen();
+          v.muted = false;
+          v.play();
+        } catch (_) {}
+        return;
+      }
+      // Other browsers
+      if (v.requestFullscreen) v.requestFullscreen();
+      try {
+        v.muted = false;
+        v.play();
+      } catch (_) {}
+    },
+  },
+  mounted() {
+    window.addEventListener("keydown", this.onKey);
+  },
+  unmounted() {
+    window.removeEventListener("keydown", this.onKey);
+  },
+};
 </script>
 
-
-<style>
-.student_work_section {
-    margin-left: 10%;
-    color: aliceblue;
-    background-color: #000;
-    padding: 100px 20px;
-    /* text-align: center; */
+<style scoped>
+.section-title-text {
+  margin: 10px;
+  font-family: "Inter", "Inter Placeholder", sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500; /* обычная */
+  letter-spacing: 0.6px;
+  line-height: 100%;
+  text-transform: uppercase;
+  text-decoration: none;
+  text-align: start;
+  color: #b6b6b6;
 }
-
-
-
-.section-title {
-  align-self:flex-start; 
-    display: inline-block;
-    
-  border-width: 0px;
-    border-radius: 3000px 3000px 3000px 3000px;
-    background-image: linear-gradient(0.488turn, rgba(97, 68, 117, 0.44) 0%, rgba(255, 255, 255, 0) 100%);
-    border-color: transparent;
-    border-style: solid;
-    margin-bottom: 40px;
-    justify-content: left;
+/* ГАЛЕРЕЯ */
+.container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px 16px;
 }
-.text_student_work {
-    /* display: inline-block; */
-    padding: 0.75rem 2rem;
-    background-image: linear-gradient(0.488turn, rgba(97, 68, 117, 0.44) 0%, rgba(255, 255, 255, 0) 100%);
-    border-radius: 3000px 3000px 3000px 3000px;
-  vertical-align: middle;
-    color: #f8f8f8;
-    font-size:2.5rem;
-    font-family: 'Arial', Arial, sans-serif;
-    line-height: 1;
-    font-weight: 600;
-    letter-spacing: -1.5px;
-    background-position: center center;
-    border-color: transparent;
-    border-style: solid;
-    
-    text-align: left;
-}    
-
- .swiper {
-  width: 100%;
-  height: 700px;
-  display: flex;
-  justify-content: flex-end; 
-
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
-.swiper-wrapper {
-  /* width: 100%; */
+.card-link {
+  display: block;
   height: 100%;
-  text-align: center;
-  font-size: 25px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  filter: blur(0);
-  /* opacity: 0.6; */
-  transition: filter 0.5s ease, opacity 0.5s ease;
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-
-}
-
-.swiper-slide-content{
-   align-items: flex-start;
-   /* background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); */
-   /* background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); */
-   /* background: linear-gradient(135deg, #064e3b 0%, #065f46 100%); */
-   background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
-   /* background: linear-gradient(135deg, #2c2f33 0%, #23272a 100%); */
-
-
-  border-radius: 10%;
-
-}
-.swiper-video-preview{
-  object-fit: cover;
-  border-radius: 5%;
-}
-
-.swiper-slide img {
-  border-radius: 10%;
-  width: 130px;
-  height: 130px;
-  object-fit: cover;
-  margin-left: 5%;
-  margin-top: 2%;
-}
-.swiper-slide-text{
-  margin-top: 2%;
-  display: flex;
-  flex-direction: row;
-  /* align-items: center; */
-  justify-content: right;
-  text-align: left;
-  gap: 20px;
-}
-.swiper-text-block{
-  font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
-  color: #cfd9f5; /* світлий текст */
-  padding: 16px;
-  border-radius: 8px;
-  max-width: 400px;
-  line-height: 1.5;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 10px;
-  
-}
-.swiper-text-block h3 {
-  /* line-height: 0.5; */
-  font-size:larger;   
-  margin: 0;
-
-  font-weight: bold;
-  color: white;
-}
-.swiper-text-block p {
-  font-size: 14px;
-  font-weight: 400;
-  margin: 0;
-}
-.button-reveal {
-  background-color: #1f66c1;      
-  color: #ffffff;
-  padding: 10px 26px;             
-  border: none;
-  border-radius: 24px;            
-  font-size: 13px;                
-  font-family: 'Segoe UI', sans-serif;
-  font-weight: 600;               
+  text-decoration: none;
+  color: inherit;
+  background: #171717;
+  border-radius: 18px;
+  border: 4px solid #7a1f1f;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.video-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3/4;
+  background: #0e0e0e;
+}
+.video-wrap video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.meta {
+  padding: 16px 18px 20px;
+}
+.title {
+  margin: 0 0 6px;
+  font-size: 22px;
+  color: #fff;
+  font-weight: 800;
+}
+.tag {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.75);
+}
+@media (max-width: 1199px) {
+  .cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+}
+@media (max-width: 767px) {
+  .cards {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .title {
+    font-size: 18px;
+  }
 }
 
-.button-reveal:hover {
-  background-color: #3783e0;      
+/* МОДАЛКА (деталі роботи) */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: grid;
+  place-items: center;
+  z-index: 1100;
+  padding: 24px;
+}
+.sheet {
+  width: min(960px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: #141414;
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  padding: 24px;
+} /* was 1100px */
+.close {
+  position: sticky;
+  top: 0;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+}
+.close:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.swiper-button-next{
-  right: 45%; 
-
+.head {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 28px;
+  align-items: start;
+  margin-bottom: 20px;
+  color: #eaeaea;
 }
-.swiper-button-prev {
- left: 35%;
+.d-title {
+  font-size: 40px;
+  line-height: 1.1;
+  margin: 0 0 8px;
 }
-.swiper-button-next,
-.swiper-button-prev {
- display: none !important;
-
-
- background-color: transparent;
- border-radius: 50%;
- border: 3px solid #ffffff;
- width: 48px;
- height: 48px;
- color: #ffffff;
- font-weight: bold;
- box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
- transition: all 0.3s ease;
- 
- top: 4%;
+.d-sub {
+  font-size: 18px;
+  opacity: 0.85;
+  margin: 0;
 }
-
-.swiper-button-next::after,
-.swiper-button-prev::after {
+.meta-title {
+  margin: 0 0 8px;
   font-size: 20px;
 }
-
-.swiper-button-next:hover{
-  transform: translateX(-2px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
-}
-.swiper-button-prev:hover{
-  transform: translateX(2px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
-}
-.student-modal-overlay {
-  position: fixed;
-  z-index: 2000;
-  left: 0; top: 0; right: 0; bottom: 0;
-  background: rgba(30, 41, 59, 0.85);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(4px);
-}
-
-
-@keyframes modalFadeIn {
-  from { opacity: 0; transform: translateY(40px);}
-  to { opacity: 1; transform: none;}
-}
-
-.student-modal {
-  background: #16213e;
-  color: #fff;
-  border-radius: 28px;
-  max-width: 1300px;
-  width: 96vw;
-  padding: 48px 48px 48px 48px;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.28);
-  position: relative;
-  display: flex;
-  flex-direction: row;
-  gap: 48px;
-  animation: modalFadeIn 0.4s;
-  align-items: stretch;
-}
-
-.modal-left-block {
-  flex: 1.6;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-}
-
-.modal-header-row {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 24px;
-  margin-bottom: 18px;
-}
-
-.modal-avatar {
-  width: 90px;
-  height: 90px;
-  border-radius: 18px;
-  object-fit: cover;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
-}
-
-.modal-name {
-  font-size: 2.2rem;
-  font-weight: 700;
-  margin: 0 0 4px 0;
-  color: #fff;
-  letter-spacing: 0.5px;
-}
-
-.modal-username {
-  color: #b5c7e6;
-  font-size: 1.1rem;
-  margin-bottom: 0;
+.desc {
+  margin: 0 0 12px;
   opacity: 0.85;
 }
-
-.modal-body {
-  margin-top: 0;
+.kv {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+.kv li {
   display: flex;
-  flex-direction: column;
-  gap: 24px;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+  padding: 6px 0;
 }
-
-.modal-about {
-  font-size: 1.18rem;
-  color: #e0e7ef;
-  margin-bottom: 0;
-  white-space: pre-line;
-  font-family: 'JetBrains Mono', 'Fira Mono', 'Consolas', monospace;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-  line-height: 1.5;
+.kv span {
+  opacity: 0.7;
 }
-
-.modal-experience {
-  display: flex;
-  gap: 24px;
-  margin: 0 0 8px 0;
+.kv b {
+  font-weight: 700;
 }
-
-.modal-experience > div {
-  background: rgba(23, 32, 51, 0.98);
-  border-radius: 16px;
-  padding: 18px 22px;
-  min-width: 260px;
-  font-size: 1.08rem;
-  color: #e0e7ef;
-  border: 1.5px solid #2e3c54;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+.media {
+  margin-top: 16px;
 }
-
-.modal-experience > div strong {
-  font-size: 1.08rem;
-  color: #fff;
-  margin-bottom: 6px;
+.hero-video {
+  width: 100%;
+  height: auto;
+  max-height: 60vh;
+  object-fit: contain;
+  border-radius: 14px;
+  background: #0e0e0e;
   display: block;
-  font-family: 'Segoe UI Semibold', 'Segoe UI', Arial, sans-serif;
 }
 
-.modal-content-right {
-  flex: 1.2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+@media (max-width: 1024px) {
+  .head {
+    grid-template-columns: 1fr;
+  }
+  .d-title {
+    font-size: 32px;
+  }
 }
-
-.modal-video {
-  width: 100%;
-  max-width: 480px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+@media (max-width: 600px) {
+  .sheet {
+    padding: 16px;
+    border-radius: 14px;
+  }
+  .overlay {
+    padding: 12px;
+  }
 }
-
-.modal-video video {
-  width: 100%;
-  border-radius: 18px;
-  background: #000;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+.video-frame {
+  position: relative;
 }
-
-.modal-close-btn {
+.fs-btn {
   position: absolute;
-  top: 24px;
-  right: 32px;
-  background: none;
-  border: none;
-  color: #b5c7e6;
-  font-size: 2.2rem;
-  cursor: pointer;
-  transition: color 0.2s;
-  z-index: 10;
-}
-.modal-close-btn:hover {
+  right: 12px;
+  bottom: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
   color: #fff;
+  border-radius: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+.fs-btn::before {
+  content: "⛶";
+  font-size: 16px;
+  line-height: 1;
+}
+.fs-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
 }
 </style>
