@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import Registration from "./components/registration.vue";
+// import Registration from "./components/registration.vue";
 import Revus from "./components/mainPageComponents/Revus.vue";
 import GalleryOfWorks from "./components/mainPageComponents/Gallery_of_works.vue";
 import BeforeAfterSlider from "./components/mainPageComponents/BeforeAfterSlider.vue";
@@ -106,18 +106,18 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 12px 24px;
-  background: rgba(
-    17,
-    17,
-    17,
-    0.25
-  ); /* легкий фон, щоб текст читався, без сильного затемнення */
+  background: rgba(17,
+      17,
+      17,
+      0.25);
+  /* легкий фон, щоб текст читався, без сильного затемнення */
   -webkit-backdrop-filter: saturate(120%) blur(6px);
   backdrop-filter: saturate(120%) blur(6px);
   color: #fff;
   z-index: 999;
   transition: background 0.25s ease, box-shadow 0.25s ease;
 }
+
 .navbar.scrolled {
   background: rgba(17, 17, 17, 0.45);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
@@ -136,12 +136,14 @@ export default {
   margin: 0;
   padding: 0;
 }
+
 .nav-links a {
   color: #fff;
   font-weight: 500;
   font-size: 15px;
   text-decoration: none;
 }
+
 .nav-links a:hover {
   text-decoration: underline;
 }
@@ -159,6 +161,7 @@ export default {
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   cursor: pointer;
 }
+
 .register-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
@@ -172,12 +175,14 @@ export default {
   padding: 72px 48px;
   text-align: left;
 }
+
 .main-title {
   font-size: 48px;
   line-height: 1.1;
   font-weight: 800;
   margin: 0 0 12px;
 }
+
 .subtext {
   font-size: 18px;
   max-width: 60ch;
@@ -193,22 +198,28 @@ export default {
   :root {
     --header-padding-y: 72px;
   }
+
   .navbar {
     padding: 12px 20px;
   }
+
   .logo {
     font-size: 19px;
   }
+
   .nav-links {
     gap: 14px;
   }
+
   .register-btn {
     padding: 9px 14px;
     font-size: 14px;
   }
+
   .main-title {
     font-size: 42px;
   }
+
   .subtext {
     font-size: 17px;
   }
@@ -218,15 +229,19 @@ export default {
   .navbar {
     padding: 12px 18px;
   }
+
   .logo {
     font-size: 18px;
   }
+
   .nav-links a {
     font-size: 14px;
   }
+
   .main-title {
     font-size: 36px;
   }
+
   .subtext {
     font-size: 16px;
   }
@@ -234,6 +249,7 @@ export default {
 
 /* ===== АДАПТИВ ПІД ТЕЛЕФОНИ (≤ 768px, ≤ 560px, ≤ 420px) ===== */
 @media (max-width: 768px) {
+
   /* НЕ міняємо структуру, лише розкладаємо елементи у 2 рядки */
   .navbar {
     flex-wrap: wrap;
@@ -247,7 +263,8 @@ export default {
 
   /* робимо навігацію горизонтально-прокручуваною, щоб нічого не пропало */
   .nav-links {
-    order: 3; /* піде нижче кнопки */
+    order: 3;
+    /* піде нижче кнопки */
     width: 100%;
     overflow-x: auto;
     white-space: nowrap;
@@ -256,13 +273,16 @@ export default {
     padding-bottom: 6px;
     scrollbar-width: thin;
   }
+
   .nav-links::-webkit-scrollbar {
     height: 6px;
   }
+
   .nav-links::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.35);
     border-radius: 4px;
   }
+
   .nav-links a {
     font-size: 14px;
     display: inline-block;
@@ -278,12 +298,15 @@ export default {
   .header {
     min-height: 72svh;
   }
+
   .header-info {
     padding: 56px 16px;
   }
+
   .main-title {
     font-size: 28px;
   }
+
   .subtext {
     font-size: 15px;
     max-width: 46ch;
@@ -298,19 +321,24 @@ export default {
   .logo {
     font-size: 17px;
   }
+
   .nav-links {
     gap: 10px;
   }
+
   .nav-links a {
     font-size: 13.5px;
   }
+
   .register-btn {
     font-size: 13.5px;
     padding: 7px 11px;
   }
+
   .main-title {
     font-size: 24px;
   }
+
   .subtext {
     font-size: 14.5px;
   }
@@ -320,9 +348,11 @@ export default {
   .logo {
     font-size: 16px;
   }
+
   .nav-links a {
     font-size: 13px;
   }
+
   .register-btn {
     font-size: 13px;
     padding: 7px 10px;
@@ -335,11 +365,13 @@ export default {
     padding: 14px 40px;
   }
 }
+
 @media (min-width: 1680px) {
   .navbar {
     padding: 16px 56px;
   }
 }
+
 @media (min-width: 1920px) {
   /* залишаємо твою початкову композицію без змін */
 }
@@ -350,11 +382,13 @@ export default {
     transition: none;
   }
 }
+
 @media (prefers-color-scheme: dark) {
   .navbar {
     background: rgba(17, 17, 17, 0.3);
   }
 }
+
 @media (prefers-reduced-data: reduce) {
   /* не прибираємо відео повністю, лише вимикаємо auto-play через атрибут, якщо потрібно — це вже у розмітці */
 }
