@@ -7,22 +7,10 @@
       <!-- Вертикальные видео -->
       <ul class="cards vertical-cards" role="list">
         <li v-for="item in verticalVideos" :key="item.slug" class="card">
-          <div
-            class="card-link"
-            :aria-label="item.title"
-            @click="open(item)"
-            @mouseenter="playVideo(item.slug)"
-            @mouseleave="pauseVideo(item.slug)"
-          >
+          <div class="card-link" :aria-label="item.title" @click="open(item)" @mouseenter="playVideo(item.slug)"
+            @mouseleave="pauseVideo(item.slug)">
             <div class="video-wrap">
-              <video
-                :id="`video-${item.slug}`"
-                :src="item.video"
-                muted
-                preload="metadata"
-                loop
-                playsinline
-              ></video>
+              <video :id="`video-${item.slug}`" :src="item.video" muted preload="metadata" loop playsinline></video>
             </div>
             <div class="meta">
               <h3 class="title">{{ item.title }}</h3>
@@ -34,27 +22,11 @@
 
       <!-- Горизонтальные видео -->
       <ul class="cards horizontal-cards" role="list">
-        <li
-          v-for="item in horizontalVideos"
-          :key="item.slug"
-          class="card horizontal-card"
-        >
-          <div
-            class="card-link horizontal-card-link"
-            :aria-label="item.title"
-            @click="open(item)"
-            @mouseenter="playVideo(item.slug)"
-            @mouseleave="pauseVideo(item.slug)"
-          >
+        <li v-for="item in horizontalVideos" :key="item.slug" class="card horizontal-card">
+          <div class="card-link horizontal-card-link" :aria-label="item.title" @click="open(item)"
+            @mouseenter="playVideo(item.slug)" @mouseleave="pauseVideo(item.slug)">
             <div class="video-wrap horizontal-video-wrap">
-              <video
-                :id="`video-${item.slug}`"
-                :src="item.video"
-                muted
-                preload="metadata"
-                loop
-                playsinline
-              ></video>
+              <video :id="`video-${item.slug}`" :src="item.video" muted preload="metadata" loop playsinline></video>
             </div>
             <div class="meta">
               <h3 class="title">{{ item.title }}</h3>
@@ -68,12 +40,7 @@
     <!-- Детали работы как модальное окно (БЕЗ роутера) -->
     <transition name="fade">
       <div v-if="selected" class="overlay" @click.self="close">
-        <div
-          class="sheet"
-          role="dialog"
-          aria-modal="true"
-          :aria-label="selected.title"
-        >
+        <div class="sheet" role="dialog" aria-modal="true" :aria-label="selected.title">
           <button class="close" @click="close" aria-label="Close">×</button>
 
           <header class="head">
@@ -96,20 +63,9 @@
             <div class="video-section">
               <h3 class="video-title">Работа</h3>
               <div class="video-frame">
-                <video
-                  ref="workVideo"
-                  :src="selected.video"
-                  playsinline
-                  preload="metadata"
-                  class="hero-video"
-                  autoplay
-                  muted
-                ></video>
-                <button
-                  class="fs-btn"
-                  @click="goFullscreen('workVideo')"
-                  aria-label="Full screen"
-                ></button>
+                <video ref="workVideo" :src="selected.video" playsinline preload="metadata" class="hero-video" autoplay
+                  muted></video>
+                <button class="fs-btn" @click="goFullscreen('workVideo')" aria-label="Full screen"></button>
               </div>
             </div>
 
@@ -117,19 +73,9 @@
             <div class="video-section" v-if="selected.reviewVideo">
               <h3 class="video-title">Видео-отзыв</h3>
               <div class="video-frame">
-                <video
-                  ref="reviewVideo"
-                  :src="selected.reviewVideo"
-                  playsinline
-                  preload="metadata"
-                  class="hero-video"
-                  muted
-                ></video>
-                <button
-                  class="fs-btn"
-                  @click="goFullscreen('reviewVideo')"
-                  aria-label="Full screen"
-                ></button>
+                <video ref="reviewVideo" :src="selected.reviewVideo" playsinline preload="metadata" class="hero-video"
+                  muted></video>
+                <button class="fs-btn" @click="goFullscreen('reviewVideo')" aria-label="Full screen"></button>
               </div>
             </div>
           </div>
@@ -235,6 +181,17 @@ export default {
           video: "/gallery_of_works_video/08.mp4",
           reviewVideo: "/gallery_of_works_video/review_08.mp4",
         },
+        {
+          slug: "x",
+          studentName: " Алексея",
+          tag: "FX",
+          studyStart: "01.08.2024",
+          studyEnd: "01.10.2024",
+          review:
+            "Отличный курс с современными технологиями и подходами. Много практики, качественный материал. После курса получил первые заказы. Спасибо команде!",
+          video: "/gallery_of_works_video/Final Render2.mp4",
+          reviewVideo: "/gallery_of_works_video/Final Render2.mp4",
+        },
       ],
       // Горизонтальные видео
       horizontalVideos: [
@@ -315,7 +272,7 @@ export default {
           v.webkitEnterFullscreen();
           v.muted = false;
           v.play();
-        } catch (_) {}
+        } catch (_) { }
         return;
       }
       // Other browsers
@@ -323,7 +280,7 @@ export default {
       try {
         v.muted = false;
         v.play();
-      } catch (_) {}
+      } catch (_) { }
     },
   },
   mounted() {
@@ -393,13 +350,15 @@ export default {
 .video-wrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 3/4; /* Вертикальное соотношение */
+  aspect-ratio: 3/4;
+  /* Вертикальное соотношение */
   background: #0e0e0e;
 }
 
 /* Горизонтальное видео */
 .horizontal-video-wrap {
-  aspect-ratio: 16/9; /* Горизонтальное соотношение */
+  aspect-ratio: 16/9;
+  /* Горизонтальное соотношение */
 }
 
 .video-wrap video {
@@ -440,6 +399,7 @@ export default {
 
 /* Адаптив для мобильных */
 @media (max-width: 767px) {
+
   .vertical-cards,
   .horizontal-cards {
     grid-template-columns: 1fr;
@@ -451,14 +411,16 @@ export default {
   }
 
   .horizontal-video-wrap {
-    aspect-ratio: 16/10; /* Немного выше на мобильных */
+    aspect-ratio: 16/10;
+    /* Немного выше на мобильных */
   }
 }
 
 /* Средние планшеты */
 @media (max-width: 991px) and (min-width: 768px) {
   .horizontal-cards {
-    grid-template-columns: 1fr; /* 1 в ряд на средних планшетах */
+    grid-template-columns: 1fr;
+    /* 1 в ряд на средних планшетах */
   }
 }
 
@@ -467,10 +429,12 @@ export default {
 .fade-leave-active {
   transition: opacity 0.2s ease;
 }
+
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
 }
+
 .overlay {
   position: fixed;
   inset: 0;
@@ -480,6 +444,7 @@ export default {
   z-index: 1100;
   padding: 24px;
 }
+
 .sheet {
   width: min(1200px, 100%);
   max-height: 90vh;
@@ -489,6 +454,7 @@ export default {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   padding: 24px;
 }
+
 .close {
   position: sticky;
   top: 0;
@@ -505,6 +471,7 @@ export default {
   font-size: 22px;
   cursor: pointer;
 }
+
 .close:hover {
   background: rgba(255, 255, 255, 0.08);
 }
@@ -517,20 +484,24 @@ export default {
   margin-bottom: 20px;
   color: #eaeaea;
 }
+
 .d-title {
   font-size: 32px;
   line-height: 1.1;
   margin: 0 0 8px;
 }
+
 .d-sub {
   font-size: 16px;
   opacity: 0.85;
   margin: 0;
 }
+
 .meta-title {
   margin: 0 0 12px;
   font-size: 24px;
 }
+
 .review-text {
   margin: 0;
   opacity: 0.9;
@@ -583,11 +554,13 @@ export default {
   padding: 8px 10px;
   cursor: pointer;
 }
+
 .fs-btn::before {
   content: "⛶";
   font-size: 16px;
   line-height: 1;
 }
+
 .fs-btn:hover {
   background: rgba(255, 255, 255, 0.16);
 }
@@ -596,9 +569,11 @@ export default {
   .head {
     grid-template-columns: 1fr;
   }
+
   .media-container {
     grid-template-columns: 1fr;
   }
+
   .d-title {
     font-size: 28px;
   }
@@ -609,12 +584,15 @@ export default {
     padding: 16px;
     border-radius: 14px;
   }
+
   .overlay {
     padding: 12px;
   }
+
   .d-title {
     font-size: 24px;
   }
+
   .hero-video {
     max-height: 40vh;
   }
