@@ -17,13 +17,10 @@
       <p class="subtext">Не учим рисовать. Учим создавать себя через искусство.</p>
     </div> -->
   </section>
-  <div>
-    <p>КТО МИ БЛОК</p>
-  </div>
+  <AboutUs />
   <GalleryOfWorks />
   <BeforeAfterSlider />
   <Revus />
-  <AboutUs />
 </template>
 
 <script>

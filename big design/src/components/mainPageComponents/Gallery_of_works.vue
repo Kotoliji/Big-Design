@@ -4,8 +4,9 @@
       <div class="section-title">
         <h2 class="section-title-text">Работы учеников</h2>
       </div>
-      <ul class="cards" role="list">
-        <li v-for="item in catalog" :key="item.slug" class="card">
+      <!-- Вертикальные видео -->
+      <ul class="cards vertical-cards" role="list">
+        <li v-for="item in verticalVideos" :key="item.slug" class="card">
           <div
             class="card-link"
             :aria-label="item.title"
@@ -30,9 +31,41 @@
           </div>
         </li>
       </ul>
+
+      <!-- Горизонтальные видео -->
+      <ul class="cards horizontal-cards" role="list">
+        <li
+          v-for="item in horizontalVideos"
+          :key="item.slug"
+          class="card horizontal-card"
+        >
+          <div
+            class="card-link horizontal-card-link"
+            :aria-label="item.title"
+            @click="open(item)"
+            @mouseenter="playVideo(item.slug)"
+            @mouseleave="pauseVideo(item.slug)"
+          >
+            <div class="video-wrap horizontal-video-wrap">
+              <video
+                :id="`video-${item.slug}`"
+                :src="item.video"
+                muted
+                preload="metadata"
+                loop
+                playsinline
+              ></video>
+            </div>
+            <div class="meta">
+              <h3 class="title">{{ item.title }}</h3>
+              <p class="tag">{{ item.tag }}</p>
+            </div>
+          </div>
+        </li>
+      </ul>
     </div>
 
-    <!-- Деталі роботи як модальне вікно (БЕЗ роутера) -->
+    <!-- Детали работы как модальное окно (БЕЗ роутера) -->
     <transition name="fade">
       <div v-if="selected" class="overlay" @click.self="close">
         <div
@@ -45,46 +78,59 @@
 
           <header class="head">
             <div class="left">
-              <h1 class="d-title">{{ selected.title }}</h1>
-              <p v-if="selected.subtitle" class="d-sub">
-                {{ selected.subtitle }}
+              <h1 class="d-title">{{ selected.studentName }}</h1>
+              <p class="d-sub">
+                Обучился с {{ selected.studyStart }} до {{ selected.studyEnd }}
               </p>
             </div>
             <aside class="right">
-              <h2 class="meta-title">Project Details</h2>
-              <p v-if="selected.description" class="desc">
-                {{ selected.description }}
+              <h2 class="meta-title">Отзыв</h2>
+              <p class="review-text">
+                {{ selected.review }}
               </p>
-              <ul class="kv">
-                <li>
-                  <span>Client</span><b>{{ selected.client || "—" }}</b>
-                </li>
-                <li>
-                  <span>Category</span><b>{{ selected.category || "—" }}</b>
-                </li>
-                <li>
-                  <span>Year</span><b>{{ selected.year || "—" }}</b>
-                </li>
-              </ul>
             </aside>
           </header>
 
-          <div class="media" v-if="selected.video">
-            <div class="video-frame">
-              <video
-                ref="detailVideo"
-                :src="selected.video"
-                playsinline
-                preload="metadata"
-                class="hero-video"
-                autoplay
-                muted
-              ></video>
-              <button
-                class="fs-btn"
-                @click="goFullscreen"
-                aria-label="Full screen"
-              ></button>
+          <div class="media-container">
+            <!-- Левое видео - работа -->
+            <div class="video-section">
+              <h3 class="video-title">Работа</h3>
+              <div class="video-frame">
+                <video
+                  ref="workVideo"
+                  :src="selected.video"
+                  playsinline
+                  preload="metadata"
+                  class="hero-video"
+                  autoplay
+                  muted
+                ></video>
+                <button
+                  class="fs-btn"
+                  @click="goFullscreen('workVideo')"
+                  aria-label="Full screen"
+                ></button>
+              </div>
+            </div>
+
+            <!-- Правое видео - отзыв -->
+            <div class="video-section" v-if="selected.reviewVideo">
+              <h3 class="video-title">Видео-отзыв</h3>
+              <div class="video-frame">
+                <video
+                  ref="reviewVideo"
+                  :src="selected.reviewVideo"
+                  playsinline
+                  preload="metadata"
+                  class="hero-video"
+                  muted
+                ></video>
+                <button
+                  class="fs-btn"
+                  @click="goFullscreen('reviewVideo')"
+                  aria-label="Full screen"
+                ></button>
+              </div>
             </div>
           </div>
         </div>
@@ -99,83 +145,142 @@ export default {
   data() {
     return {
       selected: null,
-      // Відео з public/gallery_of_works_video
-      catalog: [
+      // Вертикальные видео
+      verticalVideos: [
         {
-          slug: "mercedes",
-          title: "Mercedes",
-          tag: "Viral VFX",
-          category: "Viral VFX",
-          year: "2024",
-          client: "Mercedes",
-          subtitle: "Automotive viral VFX piece.",
-          description:
-            "Short viral VFX spot with seamless CG integration and tracked shots.",
+          slug: "vasiliy",
+          studentName: "Работа ученика Василия",
+          tag: "Работа ученицы клуба Ольги",
+          studyStart: "01.01.2001",
+          studyEnd: "01.02.2001",
+          review:
+            "Йо, мне очень зашел курс, смог проработать свои слабые стороны лукдевинга, отдельный респект Ване, чиловый парень, оч много получал фидбека именно от него, так что если желаете улучшить свои навыки, то рекомендую данный курс, тем более на рынке он максимально демократичная цена",
           video: "/gallery_of_works_video/01.mp4",
+          reviewVideo: "/gallery_of_works_video/review_01.mp4",
         },
         {
-          slug: "marvels-spider-man-2",
-          title: "Marvel's Spider‑Man 2",
-          tag: "Viral VFX",
-          category: "Viral VFX",
-          year: "2024",
-          client: "—",
-          subtitle: "CGI stunt concept",
-          description:
-            "CG work inspired by the game IP. Focus on dynamics and compositing.",
+          slug: "natalia",
+          studentName: "Работа ученицы Наталии",
+          tag: "Работа ученицы клуба Наталии",
+          studyStart: "15.02.2023",
+          studyEnd: "15.04.2023",
+          review:
+            "Курс превзошел все мои ожидания! Структурированная подача материала и постоянная поддержка от преподавателей помогли мне освоить VFX с нуля. Особенно понравились практические задания.",
           video: "/gallery_of_works_video/02.mp4",
+          reviewVideo: "/gallery_of_works_video/review_02.mp4",
         },
         {
-          slug: "luciano-loco",
-          title: "Luciano Loco",
-          tag: "Motion Design",
-          category: "Motion Design",
-          year: "2024",
-          client: "Luciano Loco",
-          subtitle: "Merch CGI commercial",
-          description:
-            "Full CGI promo for merchandise aligned with album color palette.",
+          slug: "sultan",
+          studentName: "Работа ученика Султана",
+          tag: "Работа ученика клуба Султана",
+          studyStart: "10.03.2024",
+          studyEnd: "10.05.2024",
+          review:
+            "Отличный курс для начинающих и опытных. Много практики, хорошие примеры, качественная обратная связь. Рекомендую всем, кто хочет серьезно заниматься 3D и VFX.",
           video: "/gallery_of_works_video/03.mp4",
+          reviewVideo: "/gallery_of_works_video/review_03.mp4",
         },
         {
-          slug: "work-04",
-          title: "Project 04",
-          tag: "VFX",
-          category: "VFX",
-          year: "2024",
+          slug: "boris",
+          studentName: "Работа ученика Бориса",
+          tag: "Работа ученика клуба Бориса",
+          studyStart: "05.04.2024",
+          studyEnd: "05.06.2024",
+          review:
+            "Прекрасная организация курса, много полезной информации. Преподаватели всегда готовы помочь и объяснить сложные моменты. Результат превзошел ожидания.",
           video: "/gallery_of_works_video/04.mp4",
+          reviewVideo: "/gallery_of_works_video/review_04.mp4",
         },
         {
-          slug: "work-05",
-          title: "Project 05",
-          tag: "VFX",
-          category: "VFX",
-          year: "2024",
+          slug: "vasilisa",
+          studentName: "Работа ученицы Василисы",
+          tag: "Работа ученика клуба Василия",
+          studyStart: "01.05.2024",
+          studyEnd: "01.07.2024",
+          review:
+            "Курс помог мне понять основы VFX и 3D графики. Много практических заданий, которые помогают закрепить теорию. Отличное соотношение цены и качества.",
           video: "/gallery_of_works_video/05.mp4",
+          reviewVideo: "/gallery_of_works_video/review_05.mp4",
         },
         {
-          slug: "work-06",
-          title: "Project 06",
-          tag: "VFX",
-          category: "VFX",
-          year: "2024",
+          slug: "denisa",
+          studentName: "Работа ученицы Денисы",
+          tag: "Работа ученика клуба Дениса",
+          studyStart: "15.06.2024",
+          studyEnd: "15.08.2024",
+          review:
+            "Замечательный курс! Все объясняется понятно и доступно. Преподаватели профессионалы своего дела. После курса уверенно работаю с Blender и After Effects.",
           video: "/gallery_of_works_video/06.mp4",
+          reviewVideo: "/gallery_of_works_video/review_06.mp4",
         },
         {
-          slug: "work-07",
-          title: "Project 07",
-          tag: "VFX",
-          category: "VFX",
-          year: "2024",
+          slug: "vitaly",
+          studentName: "Работа ученика Виталия",
+          tag: "Работа ученика клуба Виталия",
+          studyStart: "20.07.2024",
+          studyEnd: "20.09.2024",
+          review:
+            "Курс дал мне все необходимые знания для работы в сфере VFX. Особенно ценю индивидуальный подход и детальные разборы работ. Рекомендую!",
           video: "/gallery_of_works_video/07.mp4",
+          reviewVideo: "/gallery_of_works_video/review_07.mp4",
         },
         {
-          slug: "work-08",
-          title: "Project 08",
+          slug: "alex",
+          studentName: "Работа ученика Алексея",
           tag: "VFX",
-          category: "VFX",
-          year: "2024",
+          studyStart: "01.08.2024",
+          studyEnd: "01.10.2024",
+          review:
+            "Отличный курс с современными технологиями и подходами. Много практики, качественный материал. После курса получил первые заказы. Спасибо команде!",
           video: "/gallery_of_works_video/08.mp4",
+          reviewVideo: "/gallery_of_works_video/review_08.mp4",
+        },
+      ],
+      // Горизонтальные видео
+      horizontalVideos: [
+        {
+          slug: "maxim-horizontal",
+          studentName: "Работа ученика Максима",
+          tag: "Работа ученика клуба Максима",
+          studyStart: "01.09.2024",
+          studyEnd: "01.11.2024",
+          review:
+            "Курс помог мне освоить горизонтальный формат видео и создавать качественный контент для различных платформ. Отличная подача материала и поддержка преподавателей.",
+          video: "/gallery_of_works_video/09.mp4",
+          reviewVideo: "/gallery_of_works_video/review_horizontal_01.mp4",
+        },
+        {
+          slug: "elena-horizontal",
+          studentName: "Работа ученицы Елены",
+          tag: "Работа ученицы клуба Елены",
+          studyStart: "15.09.2024",
+          studyEnd: "15.11.2024",
+          review:
+            "Благодаря курсу научилась создавать профессиональные горизонтальные видео. Много практики и индивидуальной работы с преподавателями. Очень довольна результатом!",
+          video: "/gallery_of_works_video/010.mp4",
+          reviewVideo: "/gallery_of_works_video/review_horizontal_02.mp4",
+        },
+        {
+          slug: "dmitry-horizontal",
+          studentName: "Работа ученика Дмитрия",
+          tag: "Работа ученика клуба Дмитрия",
+          studyStart: "01.10.2024",
+          studyEnd: "01.12.2024",
+          review:
+            "Курс превзошел ожидания! Научился работать с горизонтальными форматами, композицией и монтажом. Преподаватели всегда готовы помочь и дать ценные советы.",
+          video: "/gallery_of_works_video/011.mp4",
+          reviewVideo: "/gallery_of_works_video/review_horizontal_03.mp4",
+        },
+        {
+          slug: "anna-horizontal",
+          studentName: "Работа ученицы Анны",
+          tag: "Работа ученицы клуба Анны",
+          studyStart: "15.10.2024",
+          studyEnd: "15.12.2024",
+          review:
+            "Отличный курс для освоения горизонтального видео! Много практических заданий, качественная обратная связь. Теперь уверенно работаю в этом формате.",
+          video: "/gallery_of_works_video/012.MOV",
+          reviewVideo: "/gallery_of_works_video/review_horizontal_04.mp4",
         },
       ],
     };
@@ -191,7 +296,7 @@ export default {
     },
     open(item) {
       this.selected = item;
-      // опціонально: блокуємо скрол сторінки, поки відкрита модалка
+      // опционально: блокуємо скрол сторінки, поки відкрита модалка
       document.body.style.overflow = "hidden";
     },
     close() {
@@ -201,8 +306,8 @@ export default {
     onKey(e) {
       if (e.key === "Escape" && this.selected) this.close();
     },
-    goFullscreen() {
-      const v = this.$refs.detailVideo;
+    goFullscreen(videoRef) {
+      const v = this.$refs[videoRef];
       if (!v) return;
       // iOS Safari
       if (v.webkitEnterFullscreen) {
@@ -236,7 +341,7 @@ export default {
   font-family: "Inter", "Inter Placeholder", sans-serif;
   font-size: 12px;
   font-style: normal;
-  font-weight: 500; /* обычная */
+  font-weight: 500;
   letter-spacing: 0.6px;
   line-height: 100%;
   text-transform: uppercase;
@@ -244,20 +349,33 @@ export default {
   text-align: start;
   color: #b6b6b6;
 }
-/* ГАЛЕРЕЯ */
+
+/* ГАЛЕРЕЯ - Вертикальные карточки */
 .container {
   max-width: 1320px;
   margin: 0 auto;
   padding: 24px 16px;
 }
+
 .cards {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 28px;
   list-style: none;
-  margin: 0;
+  margin: 0 0 40px 0;
   padding: 0;
 }
+
+/* Вертикальные видео - 3 в ряд */
+.vertical-cards {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* Горизонтальные видео - 2 в ряд */
+.horizontal-cards {
+  grid-template-columns: repeat(2, 1fr);
+  margin-bottom: 0;
+}
+
 .card-link {
   display: block;
   height: 100%;
@@ -271,48 +389,80 @@ export default {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
+
 .video-wrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 3/4;
+  aspect-ratio: 3/4; /* Вертикальное соотношение */
   background: #0e0e0e;
 }
+
+/* Горизонтальное видео */
+.horizontal-video-wrap {
+  aspect-ratio: 16/9; /* Горизонтальное соотношение */
+}
+
 .video-wrap video {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+
 .meta {
   padding: 16px 18px 20px;
 }
+
 .title {
   margin: 0 0 6px;
   font-size: 22px;
   color: #fff;
   font-weight: 800;
 }
+
 .tag {
   margin: 0;
   font-size: 14px;
   color: rgba(255, 255, 255, 0.75);
 }
+
+/* Адаптив для планшетов */
 @media (max-width: 1199px) {
-  .cards {
+  .vertical-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .horizontal-cards {
     grid-template-columns: repeat(2, 1fr);
     gap: 24px;
   }
 }
+
+/* Адаптив для мобильных */
 @media (max-width: 767px) {
-  .cards {
+  .vertical-cards,
+  .horizontal-cards {
     grid-template-columns: 1fr;
     gap: 18px;
   }
+
   .title {
     font-size: 18px;
   }
+
+  .horizontal-video-wrap {
+    aspect-ratio: 16/10; /* Немного выше на мобильных */
+  }
 }
 
-/* МОДАЛКА (деталі роботи) */
+/* Средние планшеты */
+@media (max-width: 991px) and (min-width: 768px) {
+  .horizontal-cards {
+    grid-template-columns: 1fr; /* 1 в ряд на средних планшетах */
+  }
+}
+
+/* МОДАЛКА (детали роботи) */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.2s ease;
@@ -331,14 +481,14 @@ export default {
   padding: 24px;
 }
 .sheet {
-  width: min(960px, 100%);
+  width: min(1200px, 100%);
   max-height: 90vh;
   overflow: auto;
   background: #141414;
   border-radius: 18px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   padding: 24px;
-} /* was 1100px */
+}
 .close {
   position: sticky;
   top: 0;
@@ -361,83 +511,67 @@ export default {
 
 .head {
   display: grid;
-  grid-template-columns: 1.3fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 28px;
   align-items: start;
   margin-bottom: 20px;
   color: #eaeaea;
 }
 .d-title {
-  font-size: 40px;
+  font-size: 32px;
   line-height: 1.1;
   margin: 0 0 8px;
 }
 .d-sub {
-  font-size: 18px;
+  font-size: 16px;
   opacity: 0.85;
   margin: 0;
 }
 .meta-title {
-  margin: 0 0 8px;
-  font-size: 20px;
-}
-.desc {
   margin: 0 0 12px;
-  opacity: 0.85;
+  font-size: 24px;
 }
-.kv {
-  list-style: none;
-  padding: 0;
+.review-text {
   margin: 0;
+  opacity: 0.9;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Новый контейнер для двух видео */
+.media-container {
   display: grid;
-  gap: 8px;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 20px;
 }
-.kv li {
+
+.video-section {
   display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
-  padding: 6px 0;
+  flex-direction: column;
 }
-.kv span {
-  opacity: 0.7;
+
+.video-title {
+  margin: 0 0 12px;
+  font-size: 18px;
+  color: #eaeaea;
+  font-weight: 600;
 }
-.kv b {
-  font-weight: 700;
+
+.video-frame {
+  position: relative;
 }
-.media {
-  margin-top: 16px;
-}
+
 .hero-video {
   width: 100%;
   height: auto;
-  max-height: 60vh;
+  max-height: 50vh;
   object-fit: contain;
   border-radius: 14px;
   background: #0e0e0e;
   display: block;
 }
 
-@media (max-width: 1024px) {
-  .head {
-    grid-template-columns: 1fr;
-  }
-  .d-title {
-    font-size: 32px;
-  }
-}
-@media (max-width: 600px) {
-  .sheet {
-    padding: 16px;
-    border-radius: 14px;
-  }
-  .overlay {
-    padding: 12px;
-  }
-}
-.video-frame {
-  position: relative;
-}
 .fs-btn {
   position: absolute;
   right: 12px;
@@ -456,5 +590,33 @@ export default {
 }
 .fs-btn:hover {
   background: rgba(255, 255, 255, 0.16);
+}
+
+@media (max-width: 1024px) {
+  .head {
+    grid-template-columns: 1fr;
+  }
+  .media-container {
+    grid-template-columns: 1fr;
+  }
+  .d-title {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 600px) {
+  .sheet {
+    padding: 16px;
+    border-radius: 14px;
+  }
+  .overlay {
+    padding: 12px;
+  }
+  .d-title {
+    font-size: 24px;
+  }
+  .hero-video {
+    max-height: 40vh;
+  }
 }
 </style>

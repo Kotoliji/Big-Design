@@ -7,23 +7,25 @@
     </div>
     <div class="before-after-slider">
       <!-- Контейнер с изображениями -->
-      <div class="before-after-container" ref="container"
+      <div
+        class="before-after-container"
+        ref="container"
         @mousedown="onStart"
         @touchstart="onStart"
         @click="onClick"
         @dragstart.prevent
       >
-        <img 
+        <img
           src="/src/assets/before_after_img/before.png"
           alt="БЫЛО"
           class="before-image"
-        >
-        <img 
+        />
+        <img
           src="/src/assets/before_after_img/after.png"
           alt="СТАЛО"
           class="after-image"
           :style="afterImageStyle"
-        >
+        />
 
         <!-- Линия слайдера -->
         <div class="slider-line" :style="sliderLineStyle"></div>
@@ -39,81 +41,81 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from "vue";
 
 export default {
-  name: 'BeforeAfterSlider',
+  name: "BeforeAfterSlider",
   props: {
     initialPosition: {
       type: Number,
       default: 50,
-      validator: (value) => value >= 0 && value <= 100
-    }
+      validator: (value) => value >= 0 && value <= 100,
+    },
   },
-  emits: ['positionChange'],
+  emits: ["positionChange"],
   setup(props, { emit }) {
-    const container = ref(null)
-    const isDragging = ref(false)
-    const position = ref(props.initialPosition)
+    const container = ref(null);
+    const isDragging = ref(false);
+    const position = ref(props.initialPosition);
 
     const afterImageStyle = computed(() => ({
-      clipPath: `polygon(${position.value}% 0%, 100% 0%, 100% 100%, ${position.value}% 100%)`
-    }))
+      clipPath: `polygon(${position.value}% 0%, 100% 0%, 100% 100%, ${position.value}% 100%)`,
+    }));
 
     const sliderLineStyle = computed(() => ({
-      left: `${position.value}%`
-    }))
+      left: `${position.value}%`,
+    }));
 
     const sliderArrowsStyle = computed(() => ({
-      left: `${position.value}%`
-    }))
+      left: `${position.value}%`,
+    }));
 
     const onStart = (e) => {
-      isDragging.value = true
-      e.preventDefault()
-    }
+      isDragging.value = true;
+      e.preventDefault();
+    };
 
     const onMove = (e) => {
-      if (!isDragging.value || !container.value) return
-      const clientX = e.clientX || (e.touches && e.touches[0]?.clientX)
-      if (!clientX) return
-      updatePosition(clientX)
-      e.preventDefault()
-    }
+      if (!isDragging.value || !container.value) return;
+      const clientX = e.clientX || (e.touches && e.touches[0]?.clientX);
+      if (!clientX) return;
+      updatePosition(clientX);
+      e.preventDefault();
+    };
 
     const onEnd = () => {
-      isDragging.value = false
-    }
+      isDragging.value = false;
+    };
 
     const onClick = (e) => {
-      if (isDragging.value) return
-      const clientX = e.clientX || (e.touches && e.touches[0]?.clientX)
-      if (!clientX) return
-      updatePosition(clientX)
-    }
+      if (isDragging.value) return;
+      const clientX = e.clientX || (e.touches && e.touches[0]?.clientX);
+      if (!clientX) return;
+      updatePosition(clientX);
+    };
 
     const updatePosition = (clientX) => {
-      if (!container.value) return
-      const rect = container.value.getBoundingClientRect()
-      const x = clientX - rect.left
-      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-      position.value = percentage
-      emit('positionChange', percentage)
-    }
+      if (!container.value) return;
+      const rect = container.value.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+      position.value = percentage;
+      emit("positionChange", percentage);
+    };
 
     onMounted(() => {
-      document.addEventListener('mousemove', onMove)
-      document.addEventListener('mouseup', onEnd)
-      document.addEventListener('touchmove', onMove)
-      document.addEventListener('touchend', onEnd)
-    })
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onEnd);
+      document.addEventListener("touchmove", onMove);
+      document.addEventListener("touchend", onEnd);
+    });
 
     onUnmounted(() => {
-      document.removeEventListener('mousemove', onMove)
-      document.removeEventListener('mouseup', onEnd)
-      document.removeEventListener('touchmove', onMove)
-      document.removeEventListener('touchend', onEnd)
-    })
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onEnd);
+      document.removeEventListener("touchmove", onMove);
+      document.removeEventListener("touchend", onEnd);
+    });
 
     return {
       container,
@@ -122,10 +124,10 @@ export default {
       sliderLineStyle,
       sliderArrowsStyle,
       onStart,
-      onClick
-    }
-  }
-}
+      onClick,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -156,14 +158,19 @@ export default {
   font-size: 0.95rem;
   backdrop-filter: blur(10px);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  padding: 8px;
+
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1;
 }
 
 .label-top.left {
-  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  /* background: linear-gradient(135deg, #ff6b6b, #ee5a52); */
+  padding-left: 10px;
 }
 
 .label-top.right {
-  background: linear-gradient(135deg, #4ecdc4, #44a08d);
+  /* background: linear-gradient(135deg, #4ecdc4, #44a08d); */
 }
 
 .before-after-slider {
@@ -171,7 +178,7 @@ export default {
   height: 512px;
   display: flex;
   justify-content: center;
-  align-items: center; 
+  align-items: center;
   position: relative;
 }
 
@@ -206,7 +213,12 @@ export default {
   top: 0;
   width: 2px;
   height: 100%;
-  background: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,1) 50%, rgba(255,255,255,0.9) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(255, 255, 255, 0.9) 100%
+  );
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
   transform: translateX(-50%);
   z-index: 10;
