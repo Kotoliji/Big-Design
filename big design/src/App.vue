@@ -10,7 +10,9 @@
         <li><a href="#personal_account">Клуб</a></li>
         <li><a href="#revus">Отзиви</a></li>
       </ul>
-      <button class="register-btn">Реєстрація</button>
+      <button class="register-btn" onclick="window.location.href='https://t.me/nebudetgg'">
+        Присоединиться
+      </button>
     </nav>
     <!-- <div class="header-info">
       <h1 class="main-title">Здесь не Ctrl+V.<br> Здесь Ctrl+Творчество.</h1>
