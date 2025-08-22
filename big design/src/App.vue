@@ -18,12 +18,11 @@
       <h1 class="main-title">Здесь не Ctrl+V.<br> Здесь Ctrl+Творчество.</h1>
       <p class="subtext">Не учим рисовать. Учим создавать себя через искусство.</p>
     </div> -->
-  </section>
-  <AboutUs />
+  </section <AboutUs />
   <GalleryOfWorks />
   <BeforeAfterSlider />
   <div class="center-video-block">
-    <video src="/video_with_instraction/Video present.mp4" class="center-video" controls
+    <video src="/video_with_instraction/Video_present.mp4" class="center-video" controls
       style="background:#222;"></video>
   </div>
   <Review />
