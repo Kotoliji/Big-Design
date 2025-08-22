@@ -6,9 +6,9 @@
     <nav class="navbar">
       <div class="logo">BigDesign</div>
       <ul class="nav-links">
-        <li><a href="#student_work_section">Роботы учников</a></li>
+        <li><a href="#student_work_section">Работы учеников</a></li>
         <li><a href="#personal_account">Клуб</a></li>
-        <li><a href="#revus">Отзиви</a></li>
+        <li><a href="#Review">Отзывы</a></li>
       </ul>
       <button class="register-btn" onclick="window.location.href='https://t.me/nebudetgg'">
         Присоединиться
@@ -22,12 +22,16 @@
   <AboutUs />
   <GalleryOfWorks />
   <BeforeAfterSlider />
-  <Revus />
+  <div class="center-video-block">
+    <video src="/video_with_instraction/Video present.mp4" class="center-video" controls
+      style="background:#222;"></video>
+  </div>
+  <Review />
 </template>
 
 <script>
 // import Registration from "./components/registration.vue";
-import Revus from "./components/mainPageComponents/Revus.vue";
+import Review from "./components/mainPageComponents/Review.vue";
 import GalleryOfWorks from "./components/mainPageComponents/Gallery_of_works.vue";
 import BeforeAfterSlider from "./components/mainPageComponents/BeforeAfterSlider.vue";
 import AboutUs from "./components/mainPageComponents/AboutUs.vue";
@@ -37,7 +41,7 @@ import "swiper/css";
 export default {
   name: "app",
   components: {
-    Revus,
+    Review,
     GalleryOfWorks,
     BeforeAfterSlider,
     //Registration,
@@ -63,11 +67,70 @@ export default {
 </script>
 
 <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=Libertinus+Mono&display=swap");
+.center-video-block {
 
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 32px 0 48px 0;
+  /* padding: 24px 16px; */
+}
+
+.center-video {
+  margin-top: 15px;
+  /* padding: 24px 16px; */
+  width: 80vw;
+  /* max-width: 100vw; */
+  aspect-ratio: 16/9;
+  border-radius: 18px;
+  /* box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18); */
+  background: linear-gradient(rgb(144, 144, 144) 0%, rgb(26, 26, 26) 100%);
+  object-fit: cover;
+  display: block;
+}
+
+/* Адаптив */
+@media (max-width: 900px) {
+  .center-video {
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .center-video-block {
+    margin: 18px 0 24px 0;
+    padding: 16px 4px;
+  }
+
+  .center-video {
+    border-radius: 8px;
+  }
+}
+
+
+/* Основной шрифт для всей страницы */
 :global(body) {
   margin: 0;
   overflow-x: hidden;
+  font-family: 'Jura', system-ui, sans-serif;
+}
+
+/* Основной шрифт для .logo, .navbar, .section-title-text, .register-btn и других важных элементов */
+.logo,
+.navbar,
+.section-title-text,
+.register-btn,
+.nav-links a {
+  font-family: 'Jura', system-ui, sans-serif;
+}
+
+/* Второстепенный шрифт для параграфов и описаний */
+p,
+.subtext,
+.about-block,
+.review-name {
+  font-family: "Libertinus Mono", monospace;
 }
 
 :root {
@@ -100,6 +163,8 @@ export default {
 }
 
 .navbar {
+  max-width: 100vw;
+  box-sizing: border-box;
   position: fixed;
   top: 0;
   left: 0;
