@@ -1,8 +1,10 @@
 <template>
   <section class="header">
-    <video autoplay muted loop playsinline class="bg-video">
-      <source src="./assets/screen.mp4" type="video/mp4" />
-    </video>
+    <div>
+      <video autoplay muted loop playsinline class="bg-video">
+        <source src="./assets/screen.mp4" type="video/mp4" />
+      </video>
+    </div>
     <nav class="navbar">
       <div class="logo">BigDesign</div>
       <ul class="nav-links">
@@ -18,14 +20,17 @@
       <h1 class="main-title">Здесь не Ctrl+V.<br> Здесь Ctrl+Творчество.</h1>
       <p class="subtext">Не учим рисовать. Учим создавать себя через искусство.</p>
     </div> -->
-  </section <AboutUs />
+  </section>
+  <AboutUs />
   <GalleryOfWorks />
   <BeforeAfterSlider />
+  <Club />
   <div class="center-video-block">
     <video src="/video_with_instraction/Video_present.mp4" class="center-video" controls
       style="background:#222;"></video>
   </div>
   <Review />
+
 </template>
 
 <script>
@@ -35,6 +40,7 @@ import GalleryOfWorks from "./components/mainPageComponents/Gallery_of_works.vue
 import BeforeAfterSlider from "./components/mainPageComponents/BeforeAfterSlider.vue";
 import AboutUs from "./components/mainPageComponents/AboutUs.vue";
 import heroBg from "./assets/HeaderImg.avif";
+import Club from "./components/mainPageComponents/Club.vue";
 import "swiper/css";
 
 export default {
@@ -45,6 +51,7 @@ export default {
     BeforeAfterSlider,
     //Registration,
     AboutUs,
+    Club,
   },
   data() {
     return {
@@ -152,13 +159,23 @@ p,
 .bg-video {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100svh;
   object-fit: cover;
   object-position: center;
   z-index: 0;
   pointer-events: none;
-  /* без зміни прозорості — зберігаємо вихідну картинку/відео */
+}
+
+/* Адаптив для телефонов */
+@media (max-width: 768px) {
+  .bg-video {
+    width: 100vw;
+    /* height: 100svh; */
+    min-height: 100svh;
+    left: 0;
+    top: 0;
+  }
 }
 
 .navbar {
@@ -176,7 +193,7 @@ p,
       17,
       17,
       0.25);
-  /* легкий фон, щоб текст читався, без сильного затемнення */
+  /* легкий фон, чтобы текст читался, без сильного затемнения */
   -webkit-backdrop-filter: saturate(120%) blur(6px);
   backdrop-filter: saturate(120%) blur(6px);
   color: #fff;

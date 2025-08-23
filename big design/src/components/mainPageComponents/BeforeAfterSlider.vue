@@ -7,25 +7,10 @@
     </div>
     <div class="before-after-slider">
       <!-- Контейнер с изображениями -->
-      <div
-        class="before-after-container"
-        ref="container"
-        @mousedown="onStart"
-        @touchstart="onStart"
-        @click="onClick"
-        @dragstart.prevent
-      >
-        <img
-          src="/src/assets/before_after_img/before.png"
-          alt="БЫЛО"
-          class="before-image"
-        />
-        <img
-          src="/src/assets/before_after_img/after.png"
-          alt="СТАЛО"
-          class="after-image"
-          :style="afterImageStyle"
-        />
+      <div class="before-after-container" ref="container" @mousedown="onStart" @touchstart="onStart" @click="onClick"
+        @dragstart.prevent>
+        <img src="/src/assets/before_after_img/before.png" alt="БЫЛО" class="before-image" />
+        <img src="/src/assets/before_after_img/after.png" alt="СТАЛО" class="after-image" :style="afterImageStyle" />
 
         <!-- Линия слайдера -->
         <div class="slider-line" :style="sliderLineStyle"></div>
@@ -146,7 +131,8 @@ export default {
   justify-content: space-between;
   margin-bottom: 15px;
   padding: 0 20px;
-  width: 1024px; /* фиксируем ширину */
+  width: 1024px;
+  /* фиксируем ширину */
   max-width: 100vw;
 }
 
@@ -213,12 +199,10 @@ export default {
   top: 0;
   width: 2px;
   height: 100%;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.9) 0%,
-    rgba(255, 255, 255, 1) 50%,
-    rgba(255, 255, 255, 0.9) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(255, 255, 255, 1) 50%,
+      rgba(255, 255, 255, 0.9) 100%);
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
   transform: translateX(-50%);
   z-index: 10;
@@ -258,5 +242,51 @@ export default {
 
 .arrow-right {
   margin-left: 2px;
+}
+
+.labels-top,
+.before-after-slider,
+.before-after-container {
+  width: 100%;
+  max-width: 1024px;
+  min-width: 280px;
+  margin: 0 auto;
+}
+
+.before-after-slider,
+.before-after-container {
+  aspect-ratio: 2/1;
+  height: auto;
+  min-height: 180px;
+}
+
+@media (max-width: 900px) {
+
+  .labels-top,
+  .before-after-slider,
+  .before-after-container {
+    max-width: 98vw;
+  }
+
+  .before-after-slider,
+  .before-after-container {
+    min-height: 120px;
+  }
+}
+
+@media (max-width: 600px) {
+
+  .labels-top,
+  .before-after-slider,
+  .before-after-container {
+    max-width: 100vw;
+    min-width: 0;
+    padding: 0 2vw;
+  }
+
+  .before-after-slider,
+  .before-after-container {
+    min-height: 80px;
+  }
 }
 </style>
