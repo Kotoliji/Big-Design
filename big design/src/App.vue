@@ -9,7 +9,7 @@
       <div class="logo">BigDesign</div>
       <ul class="nav-links">
         <li><a href="#student_work_section">Работы учеников</a></li>
-        <li><a href="#personal_account">Клуб</a></li>
+        <li><a href="#personal_account">CG Arena</a></li>
         <li><a href="#Review">Отзывы</a></li>
       </ul>
       <button class="register-btn" onclick="window.location.href='https://t.me/nebudetgg'">
@@ -23,7 +23,7 @@
   </section>
   <AboutUs />
   <GalleryOfWorks />
-  <BeforeAfterSlider />
+  <!-- <BeforeAfterSlider /> -->
   <Club />
   <div class="center-video-block">
     <video src="/video_with_instraction/Video_present.mp4" class="center-video" controls

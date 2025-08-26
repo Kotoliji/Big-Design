@@ -1,26 +1,28 @@
 <template>
-    <div class="club-section">
-        <div class="section-title">
-            <h2 class="section-title-text">Клуб</h2>
+    <section id="personal_account">
+        <div class="club-section">
+            <div class="section-title">
+                <h2 class="section-title-text">CG Arena</h2>
+            </div>
+            <div class="center-btn-wrap" @mouseenter="fly = true" @mouseleave="fly = false">
+                <button class="main-btn" @click="goToTelegram">
+                    <span>присоединиться</span>
+                </button>
+                <button v-if="!isMobile" :class="['fly-btn', 'fly-btn-1', { fly }]">
+                    <img src="/logo_forClab/logo1.png" alt="Photoshop" class="logo-icon" />
+                </button>
+                <button v-if="!isMobile" :class="['fly-btn', 'fly-btn-2', { fly }]">
+                    <img src="/logo_forClab/logo2.jpg" alt="Illustrator" class="logo-icon" />
+                </button>
+                <button v-if="!isMobile" :class="['fly-btn', 'fly-btn-3', { fly }]">
+                    <img src="/logo_forClab/logo3.png" alt="InDesign" class="logo-icon" />
+                </button>
+                <button v-if="!isMobile" :class="['fly-btn', 'fly-btn-4', { fly }]">
+                    <img src="/logo_forClab/logo4.png" alt="CorelDRAW" class="logo-icon" />
+                </button>
+            </div>
         </div>
-        <div class="center-btn-wrap" @mouseenter="fly = true" @mouseleave="fly = false">
-            <button class="main-btn" @click="goToTelegram">
-                <span>присоединиться</span>
-            </button>
-            <button v-if="!isMobile" :class="['fly-btn', 'fly-btn-1', { fly }]">
-                <img src="/logo_forClab/logo1.png" alt="Photoshop" class="logo-icon" />
-            </button>
-            <button v-if="!isMobile" :class="['fly-btn', 'fly-btn-2', { fly }]">
-                <img src="/logo_forClab/logo2.jpg" alt="Illustrator" class="logo-icon" />
-            </button>
-            <button v-if="!isMobile" :class="['fly-btn', 'fly-btn-3', { fly }]">
-                <img src="/logo_forClab/logo3.png" alt="InDesign" class="logo-icon" />
-            </button>
-            <button v-if="!isMobile" :class="['fly-btn', 'fly-btn-4', { fly }]">
-                <img src="/logo_forClab/logo4.png" alt="CorelDRAW" class="logo-icon" />
-            </button>
-        </div>
-    </div>
+    </section>
 </template>
 
 <script setup>

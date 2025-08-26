@@ -31,7 +31,7 @@ export default {
   name: 'IntroBlock',
   props: {
     // Положи файл в public/intro/16_08.mp4 или передай свой путь сюда
-    src: { type: String, default: '/public/description_video/16_08.mp4' }
+    src: { type: String, default: '/description_video/16_08.mp4' }
   },
   computed: {
     videoSrc() { return this.src }
