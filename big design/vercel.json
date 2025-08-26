@@ -1,5 +1,5 @@
 {
-  "installCommand": "npm ci && git lfs install && git lfs fetch --all && git lfs checkout",
+  "installCommand": "git lfs install && git lfs pull --include=\"public/**\" && npm ci",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "headers": [
