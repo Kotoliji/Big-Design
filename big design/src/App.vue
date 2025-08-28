@@ -26,12 +26,14 @@
   <!-- <BeforeAfterSlider /> -->
   <Club />
   <div class="center-video-block">
-    <video src="/video_with_instraction/Video_present.mp4" class="center-video" controls
+    <video src="../public/video_with_instraction/Video_present.mp4" class="center-video" controls
       style="background:#222;"></video>
   </div>
   <Review />
 
 </template>
+
+
 
 <script>
 // import Registration from "./components/registration.vue";
