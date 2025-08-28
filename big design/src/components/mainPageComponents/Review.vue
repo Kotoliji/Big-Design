@@ -19,8 +19,8 @@ import { Swiper, SwiperSlide } from 'swiper/vue';
 import 'swiper/css';
 
 const reviews = [
-  { video: "/gallery_of_works_review/01.MOV", name: "Наталия" },
-  { video: "/gallery_of_works_review/02.MOV", name: "Екатерина" },
+  { video: "/gallery_of_works_review/01.MOV", name: "Ольга" },
+  { video: "/gallery_of_works_review/02.MOV", name: "Наталия" },
   { video: "/gallery_of_works_review/03.MOV", name: "Султан" },
   { video: "/gallery_of_works_review/04.MOV", name: "Борис" },
   { video: "/gallery_of_works_review/06.mp4", name: "Денис" },
