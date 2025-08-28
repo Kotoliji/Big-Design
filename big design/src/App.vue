@@ -2,7 +2,7 @@
   <section class="header">
     <div>
       <video autoplay muted loop playsinline class="bg-video">
-        <source src="./assets/screen.mp4" type="video/mp4" />
+        <source src="../public/screen.mp4" type="video/mp4" />
       </video>
     </div>
     <nav class="navbar">
