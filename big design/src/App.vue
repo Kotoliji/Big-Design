@@ -31,7 +31,7 @@
 
 
   <div class="center-video-block">
-    <video src="/video_with_instraction/Video_present.mp4" class="center-video" controls
+    <video src="/video_with_instraction/Video_Present1.mp4" class="center-video" controls
       poster="/video_with_instraction/scren.jpg" style="background:#222;"></video>
   </div>
   <button class="register-btn-ground" onclick="window.location.href='https://web.tribute.tg/s/Alp'">
