@@ -2,8 +2,7 @@
   <section class="header">
     <div>
       <video autoplay muted loop playsinline class="bg-video">
-        <source :src="isMobile ? '/video_with_instraction/scren_less770px.mp4' : '../public/header_scren/screen.mp4'"
-          type="video/mp4" />
+        <source :src="isMobile ? '/header_scren/scren_less770px.mp4' : '/header_scren/screen.mp4'" type="video/mp4" />
       </video>
     </div>
     <nav class="navbar">
@@ -32,7 +31,7 @@
 
 
   <div class="center-video-block">
-    <video src="../public/video_with_instraction/Video_present.mp4" class="center-video" controls
+    <video src="/video_with_instraction/Video_present.mp4" class="center-video" controls
       poster="/video_with_instraction/scren.jpg" style="background:#222;"></video>
   </div>
   <button class="register-btn-ground" onclick="window.location.href='https://web.tribute.tg/s/Alp'">
