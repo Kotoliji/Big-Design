@@ -8,7 +8,7 @@
                 <button class="main-btn" @click="goToTelegram">
                     <span>присоединиться</span>
                 </button>
-                <button v-if="!isMobile" :class="['fly-btn', 'fly-btn-1', { fly }]">
+                <!-- <button v-if="!isMobile" :class="['fly-btn', 'fly-btn-1', { fly }]">
                     <img src="/logo_forClab/logo1.png" alt="Photoshop" class="logo-icon" />
                 </button>
                 <button v-if="!isMobile" :class="['fly-btn', 'fly-btn-2', { fly }]">
@@ -19,7 +19,7 @@
                 </button>
                 <button v-if="!isMobile" :class="['fly-btn', 'fly-btn-4', { fly }]">
                     <img src="/logo_forClab/logo4.png" alt="CorelDRAW" class="logo-icon" />
-                </button>
+                </button> -->
             </div>
         </div>
     </section>
@@ -35,7 +35,7 @@ function handleResize() {
 }
 
 function goToTelegram() {
-    window.open('https://t.me/nebudetgg', '_blank');
+    window.open('https://web.tribute.tg/s/Alp', '_blank');
 }
 
 onMounted(() => {

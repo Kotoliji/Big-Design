@@ -1,12 +1,12 @@
 <template>
   <section class="video-review-slider" id="Review">
     <div class="section-title">
-      <h2 class="section-title-text">Работы учеников</h2>
+      <h2 class="section-title-text">Отзывы</h2>
     </div>
     <swiper :space-between="40" :loop="true" :breakpoints="breakpoints" class="carousel">
       <swiper-slide v-for="(review, idx) in reviews" :key="idx">
         <div class="slider-item">
-          <video :src="review.video" controls class="review-video" preload="metadata"></video>
+          <video :src="review.video" :poster="review.poster" controls class="review-video" preload="metadata"></video>
           <p class="review-name">{{ review.name }}</p>
         </div>
       </swiper-slide>
@@ -19,12 +19,12 @@ import { Swiper, SwiperSlide } from 'swiper/vue';
 import 'swiper/css';
 
 const reviews = [
-  { video: "/gallery_of_works_review/01.MOV", name: "Ольга" },
-  { video: "/gallery_of_works_review/02.MOV", name: "Наталия" },
-  { video: "/gallery_of_works_review/03.MOV", name: "Султан" },
-  { video: "/gallery_of_works_review/04.MOV", name: "Борис" },
-  { video: "/gallery_of_works_review/06.mp4", name: "Денис" },
-  { video: "/gallery_of_works_review/07.MOV", name: "Виталий" },
+  { video: "/gallery_of_works_review/01.MOV", name: "Ольга", poster: "/gallery_of_works_review/gallery_of_works_review_img/olga.png" },
+  { video: "/gallery_of_works_review/02.MOV", name: "Наталия", poster: "/gallery_of_works_review/gallery_of_works_review_img/Наталья.png" },
+  { video: "/gallery_of_works_review/03.MOV", name: "Султан", poster: "/gallery_of_works_review/gallery_of_works_review_img/Султан.png" },
+  { video: "/gallery_of_works_review/04.MOV", name: "Борис", poster: "/gallery_of_works_review/gallery_of_works_review_img/Борис.png" },
+  { video: "/gallery_of_works_review/06.mp4", name: "Денис", poster: "/gallery_of_works_review/gallery_of_works_review_img/Денис.png" },
+  { video: "/gallery_of_works_review/07.MOV", name: "Виталий", poster: "/gallery_of_works_review/gallery_of_works_review_img/Виталий.png" },
 ];
 
 // Адаптивные настройки Swiper
@@ -83,12 +83,23 @@ const breakpoints = {
 .review-video {
   width: 100%;
   max-width: 420px;
-  /* aspect-ratio: 16/9; */
+  aspect-ratio: 9/16;
   object-fit: cover;
   border-radius: 20px;
   background: #222;
   margin-bottom: 18px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+
+.fullscreen-video {
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  object-fit: contain;
+  background: #222;
+  margin: 0 auto;
+  display: block;
 }
 
 .review-name {

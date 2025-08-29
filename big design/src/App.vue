@@ -2,7 +2,8 @@
   <section class="header">
     <div>
       <video autoplay muted loop playsinline class="bg-video">
-        <source src="../public/screen.mp4" type="video/mp4" />
+        <source :src="isMobile ? '/video_with_instraction/scren_less770px.mp4' : '../public/header_scren/screen.mp4'"
+          type="video/mp4" />
       </video>
     </div>
     <nav class="navbar">
@@ -12,7 +13,7 @@
         <li><a href="#personal_account">CG Arena</a></li>
         <li><a href="#Review">Отзывы</a></li>
       </ul>
-      <button class="register-btn" onclick="window.location.href='https://t.me/nebudetgg'">
+      <button class="register-btn" onclick="window.location.href='https://web.tribute.tg/s/Alp'">
         Присоединиться
       </button>
     </nav>
@@ -24,11 +25,22 @@
   <AboutUs />
   <GalleryOfWorks />
   <!-- <BeforeAfterSlider /> -->
-  <Club />
+  <!-- <Club /> -->
+  <img src="/cg_arena.png" alt="CG Arena" class="cg-arena-img" />
+
+
+
+
   <div class="center-video-block">
     <video src="../public/video_with_instraction/Video_present.mp4" class="center-video" controls
-      style="background:#222;"></video>
+      poster="/video_with_instraction/scren.jpg" style="background:#222;"></video>
   </div>
+  <button class="register-btn-ground" onclick="window.location.href='https://web.tribute.tg/s/Alp'">
+    Присоединиться
+  </button>
+
+
+
   <Review />
 
 </template>
@@ -57,10 +69,11 @@ export default {
   },
   data() {
     return {
-      heroBackground: `url(${heroBg})`,
+      isMobile: window.innerWidth < 770,
     };
   },
   mounted() {
+    window.addEventListener("resize", this.handleResize);
     // scroll logic
     const navbar = document.querySelector(".navbar");
     window.addEventListener("scroll", () => {
@@ -70,6 +83,14 @@ export default {
         navbar.classList.remove("scrolled");
       }
     });
+  },
+  beforeUnmount() {
+    window.removeEventListener("resize", this.handleResize);
+  },
+  methods: {
+    handleResize() {
+      this.isMobile = window.innerWidth < 770;
+    },
   },
 };
 </script>
@@ -81,12 +102,12 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 32px 0 48px 0;
+  margin: auto;
   /* padding: 24px 16px; */
 }
 
 .center-video {
-  margin-top: 15px;
+  /* margin-top: 15px; */
   /* padding: 24px 16px; */
   width: 80vw;
   /* max-width: 100vw; */
@@ -98,9 +119,32 @@ export default {
   display: block;
 }
 
+.cg-arena-img {
+  display: block;
+  margin: auto;
+  max-width: 420px;
+  width: 100%;
+  height: auto;
+  border-radius: 18px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+  object-fit: contain;
+}
+
 /* Адаптив */
 @media (max-width: 900px) {
   .center-video {
+    border-radius: 12px;
+  }
+
+  .cg-arena-img {
+    max-width: 440px;
+    border-radius: 14px;
+    margin: 24px auto 14px auto;
+  }
+
+  .register-btn-ground {
+    font-size: 18px;
+    padding: 18px 28px;
     border-radius: 12px;
   }
 }
@@ -113,6 +157,19 @@ export default {
 
   .center-video {
     border-radius: 8px;
+  }
+
+  .cg-arena-img {
+    max-width: 98vw;
+    border-radius: 10px;
+    margin: 16px auto 10px auto;
+  }
+
+  .register-btn-ground {
+    font-size: 16px;
+    padding: 14px 10px;
+    border-radius: 10px;
+    margin-bottom: 18px;
   }
 }
 
@@ -245,6 +302,33 @@ p,
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   cursor: pointer;
+}
+
+.register-btn-ground {
+  background: #fff;
+  color: #111;
+  border: none;
+  padding: 22px 38px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0.2px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  cursor: pointer;
+  display: block;
+  margin: 0 auto 32px auto;
+}
+
+.register-btn-ground:focus {
+  outline: 2px solid #000;
+  outline-offset: 2px;
+}
+
+.register-btn-ground:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.16);
+  background: #e0e0e0;
 }
 
 .register-btn:hover {
