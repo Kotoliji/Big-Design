@@ -9,7 +9,7 @@
       <div class="logo">BigDesign</div>
       <ul class="nav-links">
         <li><a href="#student_work_section">Работы учеников</a></li>
-        <li><a href="#personal_account">CG Arena</a></li>
+        <li><a href="#cg_arena">CG Arena</a></li>
         <li><a href="#Review">Отзывы</a></li>
       </ul>
       <button class="register-btn" onclick="window.location.href='https://web.tribute.tg/s/Alp'">
@@ -25,7 +25,7 @@
   <GalleryOfWorks />
   <!-- <BeforeAfterSlider /> -->
   <!-- <Club /> -->
-  <img src="/cg_arena.png" alt="CG Arena" class="cg-arena-img" />
+  <img src="/cg_arena.png" alt="CG Arena" id="cg_arena" class="cg-arena-img" />
 
 
 
