@@ -29,12 +29,12 @@ let observer = null;
 const lazyPoster = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDIwIiBoZWlnaHQ9Ijc0NyIgdmlld0JveD0iMCAwIDQyMCA3NDciIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MjAiIGhlaWdodD0iNzQ3IiBmaWxsPSIjMjIyIi8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjE2Ij7Qs9GA0YPQt9C40YLRgdGPLi4uPC90ZXh0Pgo8L3N2Zz4K';
 
 const reviews = [
-  { video: "/gallery_of_works_review/01.mp4", name: "Ольга", poster: "/gallery_of_works_review/gallery_of_works_review_img/olga.png" },
-  { video: "/gallery_of_works_review/02.mp4", name: "Наталия", poster: "/gallery_of_works_review/gallery_of_works_review_img/Наталья.png" },
-  { video: "/gallery_of_works_review/03.mp4", name: "Султан", poster: "/gallery_of_works_review/gallery_of_works_review_img/Султан.png" },
-  { video: "/gallery_of_works_review/04.mp4", name: "Борис", poster: "/gallery_of_works_review/gallery_of_works_review_img/Борис.png" },
-  { video: "/gallery_of_works_review/06.mp4", name: "Денис", poster: "/gallery_of_works_review/gallery_of_works_review_img/Денис.png" },
-  { video: "/gallery_of_works_review/07.mp4", name: "Виталий", poster: "/gallery_of_works_review/gallery_of_works_review_img/Виталий.png" },
+  { video: "/gallery_of_works_review/01).mp4", name: "Ольга", poster: "/gallery_of_works_review/gallery_of_works_review_img/olga.png" },
+  { video: "/gallery_of_works_review/02).mp4", name: "Наталия", poster: "/gallery_of_works_review/gallery_of_works_review_img/Наталья.png" },
+  { video: "/gallery_of_works_review/03).mp4", name: "Султан", poster: "/gallery_of_works_review/gallery_of_works_review_img/Султан.png" },
+  { video: "/gallery_of_works_review/04).mp4", name: "Борис", poster: "/gallery_of_works_review/gallery_of_works_review_img/Борис.png" },
+  { video: "/gallery_of_works_review/06).mp4", name: "Денис", poster: "/gallery_of_works_review/gallery_of_works_review_img/Денис.png" },
+  { video: "/gallery_of_works_review/07).mp4", name: "Виталий", poster: "/gallery_of_works_review/gallery_of_works_review_img/Виталий.png" },
 ];
 
 // Адаптивные настройки Swiper
