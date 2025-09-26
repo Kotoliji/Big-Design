@@ -10,8 +10,8 @@
           <div class="card-link" :aria-label="item.title" @click="open(item)"
             @mouseenter="isMobile ? null : playVideo(item.slug)" @mouseleave="isMobile ? null : pauseVideo(item.slug)">
             <div class="video-wrap">
-              <video :id="`video-${item.slug}`" :src="item.video" :poster="isMobile ? item.poster : ''" muted
-                preload="metadata" loop playsinline></video>
+              <video :id="`video-${item.slug}`" :data-src="item.video" :poster="isMobile ? item.poster : ''" muted
+                preload="none" loop playsinline class="lazy-video"></video>
             </div>
             <div class="meta">
               <h3 class="title">{{ item.title }}</h3>
@@ -27,8 +27,8 @@
           <div class="card-link horizontal-card-link" :aria-label="item.title" @click="open(item)"
             @mouseenter="playVideo(item.slug)" @mouseleave="pauseVideo(item.slug)">
             <div class="video-wrap horizontal-video-wrap">
-              <video :id="`video-${item.slug}`" :src="item.video" :poster="item.poster" muted preload="metadata" loop
-                playsinline></video>
+              <video :id="`video-${item.slug}`" :data-src="item.video" :poster="item.poster" muted preload="none" loop
+                playsinline class="lazy-video"></video>
             </div>
             <div class="meta">
               <h3 class="title">{{ item.title }}</h3>
@@ -91,6 +91,8 @@ export default {
   data() {
     return {
       selected: null,
+      observer: null,
+      loadedVideos: new Set(),
       // Вертикальные видео
       verticalVideos: [
         {
@@ -229,13 +231,56 @@ export default {
     };
   },
   methods: {
-    playVideo(slug) {
+    async loadVideo(video) {
+      if (this.loadedVideos.has(video.id)) return;
+
+      const dataSrc = video.getAttribute('data-src');
+      if (dataSrc && !video.src) {
+        video.src = dataSrc;
+        this.loadedVideos.add(video.id);
+
+        // Ждём загрузки метаданных
+        return new Promise((resolve) => {
+          video.addEventListener('loadedmetadata', resolve, { once: true });
+          video.load();
+        });
+      }
+    },
+    async playVideo(slug) {
       const video = document.getElementById(`video-${slug}`);
-      if (video) video.play();
+      if (video) {
+        await this.loadVideo(video);
+        video.play();
+      }
     },
     pauseVideo(slug) {
       const video = document.getElementById(`video-${slug}`);
       if (video) video.pause();
+    },
+    initLazyLoading() {
+      const options = {
+        root: null,
+        rootMargin: '50px',
+        threshold: 0.1
+      };
+
+      this.observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const video = entry.target;
+            this.loadVideo(video);
+            this.observer.unobserve(video);
+          }
+        });
+      }, options);
+
+      // Наблюдаем за всеми ленивыми видео
+      this.$nextTick(() => {
+        const lazyVideos = document.querySelectorAll('.lazy-video');
+        lazyVideos.forEach(video => {
+          this.observer.observe(video);
+        });
+      });
     },
     open(item) {
       this.selected = item;
@@ -272,9 +317,13 @@ export default {
   mounted() {
     window.addEventListener("keydown", this.onKey);
     this.isMobile = window.innerWidth <= 600;
+    this.initLazyLoading();
   },
   unmounted() {
     window.removeEventListener("keydown", this.onKey);
+    if (this.observer) {
+      this.observer.disconnect();
+    }
   },
 };
 </script>
@@ -360,6 +409,15 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: opacity 0.3s ease;
+}
+
+.lazy-video:not([src]) {
+  opacity: 0.7;
+}
+
+.lazy-video[src] {
+  opacity: 1;
 }
 
 .meta {

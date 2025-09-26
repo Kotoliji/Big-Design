@@ -6,7 +6,10 @@
     <swiper :space-between="40" :loop="true" :breakpoints="breakpoints" class="carousel">
       <swiper-slide v-for="(review, idx) in reviews" :key="idx">
         <div class="slider-item">
-          <video :src="review.video" :poster="review.poster" controls class="review-video" preload="metadata"></video>
+          <video :data-src="review.video" :data-poster="review.poster" :poster="lazyPoster" controls
+            class="review-video" preload="none" :ref="el => videoRefs[idx] = el">
+            Ваш браузер не поддерживает видео.
+          </video>
           <p class="review-name">{{ review.name }}</p>
         </div>
       </swiper-slide>
@@ -16,7 +19,14 @@
 
 <script setup>
 import { Swiper, SwiperSlide } from 'swiper/vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import 'swiper/css';
+
+const videoRefs = ref([]);
+let observer = null;
+
+// Заглушка для постера (можно заменить на свое изображение)
+const lazyPoster = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDIwIiBoZWlnaHQ9Ijc0NyIgdmlld0JveD0iMCAwIDQyMCA3NDciIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MjAiIGhlaWdodD0iNzQ3IiBmaWxsPSIjMjIyIi8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjE2Ij7Qs9GA0YPQt9C40YLRgdGPLi4uPC90ZXh0Pgo8L3N2Zz4K';
 
 const reviews = [
   { video: "/gallery_of_works_review/01.mp4", name: "Ольга", poster: "/gallery_of_works_review/gallery_of_works_review_img/olga.png" },
@@ -34,6 +44,53 @@ const breakpoints = {
   900: { slidesPerView: 3 },      // 900px+
   1200: { slidesPerView: 4.5 }    // 1200px+
 };
+
+// Функция для ленивой загрузки
+const loadVideo = (video) => {
+  const src = video.getAttribute('data-src');
+  const poster = video.getAttribute('data-poster');
+
+  if (src) {
+    video.src = src;
+    video.removeAttribute('data-src');
+  }
+
+  if (poster) {
+    video.poster = poster;
+    video.removeAttribute('data-poster');
+  }
+
+  // Предзагрузка метаданных только после того, как видео в области видимости
+  video.preload = 'metadata';
+};
+
+onMounted(() => {
+  // Создаем Intersection Observer для ленивой загрузки
+  observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const video = entry.target;
+        loadVideo(video);
+        observer.unobserve(video);
+      }
+    });
+  }, {
+    rootMargin: '50px' // Начинаем загрузку за 50px до появления в области видимости
+  });
+
+  // Наблюдаем за всеми видео элементами
+  videoRefs.value.forEach(video => {
+    if (video) {
+      observer.observe(video);
+    }
+  });
+});
+
+onUnmounted(() => {
+  if (observer) {
+    observer.disconnect();
+  }
+});
 </script>
 
 <style scoped>
@@ -89,6 +146,11 @@ const breakpoints = {
   background: #222;
   margin-bottom: 18px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  transition: opacity 0.3s ease;
+}
+
+.review-video[data-src] {
+  opacity: 0.7;
 }
 
 .fullscreen-video {

@@ -1,9 +1,11 @@
 <template>
   <section class="header">
     <div>
-      <video autoplay muted loop playsinline class="bg-video">
+      <video ref="bgVideo" v-if="shouldLoadBgVideo" autoplay muted loop playsinline class="bg-video"
+        @loadstart="onBgVideoLoadStart" @canplay="onBgVideoCanPlay">
         <source :src="isMobile ? '/header_scren/scren_less770px.mp4' : '/header_scren/screen.mp4'" type="video/mp4" />
       </video>
+      <div v-else class="bg-video-placeholder"></div>
     </div>
     <nav class="navbar">
       <div class="logo">BigDesign</div>
@@ -16,38 +18,33 @@
         Присоединиться
       </button>
     </nav>
-    <!-- <div class="header-info">
-      <h1 class="main-title">Здесь не Ctrl+V.<br> Здесь Ctrl+Творчество.</h1>
-      <p class="subtext">Не учим рисовать. Учим создавать себя через искусство.</p>
-    </div> -->
   </section>
   <AboutUs />
   <GalleryOfWorks />
-  <!-- <BeforeAfterSlider /> -->
-  <!-- <Club /> -->
-  <img src="/cg_arena.png" alt="CG Arena" id="cg_arena" class="cg-arena-img" />
 
-
-
+  <img ref="cgArenaImg" v-if="shouldLoadCgArenaImg" src="/cg_arena.png" alt="CG Arena" id="cg_arena"
+    class="cg-arena-img" @load="onCgArenaImgLoad" />
+  <div v-else class="cg-arena-placeholder"></div>
 
   <div class="center-video-block">
-    <video src="/video_with_instraction/Video_Present1.mp4" class="center-video" controls
-      poster="/video_with_instraction/scren.jpg" style="background:#222;"></video>
+    <video ref="centerVideo" v-if="shouldLoadCenterVideo" src="/video_with_instraction/Video_Present1.mp4"
+      class="center-video" controls poster="/video_with_instraction/scren.jpg" style="background:#222;" preload="none"
+      @loadstart="onCenterVideoLoadStart"></video>
+    <div v-else class="center-video-placeholder">
+      <img src="/video_with_instraction/scren.jpg" alt="Video Preview" class="video-poster-placeholder"
+        @click="loadCenterVideo" />
+      <div class="play-button" @click="loadCenterVideo">▶</div>
+    </div>
   </div>
+
   <button class="register-btn-ground" onclick="window.location.href='https://web.tribute.tg/s/Alp'">
     Присоединиться
   </button>
 
-
-
   <Review />
-
 </template>
 
-
-
 <script>
-// import Registration from "./components/registration.vue";
 import Review from "./components/mainPageComponents/Review.vue";
 import GalleryOfWorks from "./components/mainPageComponents/Gallery_of_works.vue";
 import BeforeAfterSlider from "./components/mainPageComponents/BeforeAfterSlider.vue";
@@ -62,34 +59,115 @@ export default {
     Review,
     GalleryOfWorks,
     BeforeAfterSlider,
-    //Registration,
     AboutUs,
     Club,
   },
   data() {
     return {
       isMobile: window.innerWidth < 770,
+      shouldLoadBgVideo: false,
+      shouldLoadCenterVideo: false,
+      shouldLoadCgArenaImg: false,
+      observer: null,
     };
   },
   mounted() {
     window.addEventListener("resize", this.handleResize);
-    // scroll logic
-    const navbar = document.querySelector(".navbar");
-    window.addEventListener("scroll", () => {
-      if (window.scrollY > 10) {
-        navbar.classList.add("scrolled");
-      } else {
-        navbar.classList.remove("scrolled");
-      }
-    });
+    this.setupScrollListener();
+    this.setupIntersectionObserver();
+
+    // Load background video immediately for better UX
+    this.shouldLoadBgVideo = true;
   },
   beforeUnmount() {
     window.removeEventListener("resize", this.handleResize);
+    if (this.observer) {
+      this.observer.disconnect();
+    }
   },
   methods: {
     handleResize() {
       this.isMobile = window.innerWidth < 770;
     },
+
+    setupScrollListener() {
+      const navbar = document.querySelector(".navbar");
+      window.addEventListener("scroll", () => {
+        if (window.scrollY > 10) {
+          navbar.classList.add("scrolled");
+        } else {
+          navbar.classList.remove("scrolled");
+        }
+      });
+    },
+
+    setupIntersectionObserver() {
+      if ('IntersectionObserver' in window) {
+        this.observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const target = entry.target;
+
+              if (target.classList.contains('center-video-block') && !this.shouldLoadCenterVideo) {
+                // Load center video when it's about to be visible
+                setTimeout(() => {
+                  this.shouldLoadCenterVideo = true;
+                }, 200);
+              }
+
+              if (target.classList.contains('cg-arena-placeholder') && !this.shouldLoadCgArenaImg) {
+                // Load CG Arena image when it's about to be visible
+                this.shouldLoadCgArenaImg = true;
+              }
+            }
+          });
+        }, {
+          rootMargin: '100px' // Start loading 100px before element comes into view
+        });
+
+        // Observe elements after DOM is ready
+        this.$nextTick(() => {
+          const centerVideoBlock = document.querySelector('.center-video-block');
+          const cgArenaPlaceholder = document.querySelector('.cg-arena-placeholder');
+
+          if (centerVideoBlock) {
+            this.observer.observe(centerVideoBlock);
+          }
+          if (cgArenaPlaceholder) {
+            this.observer.observe(cgArenaPlaceholder);
+          }
+        });
+      } else {
+        // Fallback for browsers without IntersectionObserver
+        this.shouldLoadCenterVideo = true;
+        this.shouldLoadCgArenaImg = true;
+      }
+    },
+
+    loadCenterVideo() {
+      this.shouldLoadCenterVideo = true;
+      this.$nextTick(() => {
+        if (this.$refs.centerVideo) {
+          this.$refs.centerVideo.play();
+        }
+      });
+    },
+
+    onBgVideoLoadStart() {
+      console.log('Background video started loading');
+    },
+
+    onBgVideoCanPlay() {
+      console.log('Background video can play');
+    },
+
+    onCenterVideoLoadStart() {
+      console.log('Center video started loading');
+    },
+
+    onCgArenaImgLoad() {
+      console.log('CG Arena image loaded');
+    }
   },
 };
 </script>
@@ -559,5 +637,148 @@ p,
 
 @media (prefers-reduced-data: reduce) {
   /* не прибираємо відео повністю, лише вимикаємо auto-play через атрибут, якщо потрібно — це вже у розмітці */
+}
+
+/* Placeholder styles */
+.bg-video-placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100svh;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+  z-index: 0;
+}
+
+.center-video-placeholder {
+  position: relative;
+  width: 80vw;
+  aspect-ratio: 16/9;
+  border-radius: 18px;
+  background: linear-gradient(rgb(144, 144, 144) 0%, rgb(26, 26, 26) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.video-poster-placeholder {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 18px;
+}
+
+.play-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #111;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.play-button:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: translate(-50%, -50%) scale(1.1);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+}
+
+.cg-arena-placeholder {
+  display: block;
+  margin: auto;
+  max-width: 420px;
+  width: 100%;
+  height: 300px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #f0f0f0 0%, #d0d0d0 50%, #e0e0e0 100%);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Loading states */
+.center-video[data-loading] {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Responsive adjustments for placeholders */
+@media (max-width: 900px) {
+  .center-video-placeholder {
+    border-radius: 12px;
+  }
+
+  .video-poster-placeholder {
+    border-radius: 12px;
+  }
+
+  .play-button {
+    width: 70px;
+    height: 70px;
+    font-size: 20px;
+  }
+
+  .cg-arena-placeholder {
+    max-width: 440px;
+    border-radius: 14px;
+    margin: 24px auto 14px auto;
+    height: 280px;
+  }
+}
+
+@media (max-width: 600px) {
+  .center-video-placeholder {
+    border-radius: 8px;
+  }
+
+  .video-poster-placeholder {
+    border-radius: 8px;
+  }
+
+  .play-button {
+    width: 60px;
+    height: 60px;
+    font-size: 18px;
+  }
+
+  .cg-arena-placeholder {
+    max-width: 98vw;
+    border-radius: 10px;
+    margin: 16px auto 10px auto;
+    height: 200px;
+  }
 }
 </style>
