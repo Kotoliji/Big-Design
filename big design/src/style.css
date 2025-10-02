@@ -44,3 +44,8 @@ ul {
     list-style: none;
     padding: 0;
 }
+button {
+  user-select: none; /* запрет выделения текста */
+  -webkit-user-select: none; /* для Safari */
+  -ms-user-select: none; /* для IE/Edge */
+}

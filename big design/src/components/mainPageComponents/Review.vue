@@ -3,29 +3,57 @@
     <div class="section-title">
       <h2 class="section-title-text">Отзывы</h2>
     </div>
-    <swiper :space-between="40" :loop="true" :breakpoints="breakpoints" class="carousel">
-      <swiper-slide v-for="(review, idx) in reviews" :key="idx">
-        <div class="slider-item">
-          <video :data-src="review.video" :data-poster="review.poster" :poster="lazyPoster" controls
-            class="review-video" preload="none" :ref="el => videoRefs[idx] = el">
-            Ваш браузер не поддерживает видео.
-          </video>
-          <p class="review-name">{{ review.name }}</p>
-        </div>
-      </swiper-slide>
-    </swiper>
+    <div class="swiper-container">
+      <swiper :space-between="40" :loop="true" :breakpoints="breakpoints" :navigation="{
+        nextEl: '.swiper-button-next-custom',
+        prevEl: '.swiper-button-prev-custom',
+      }" :modules="modules" class="carousel">
+        <swiper-slide v-for="(review, idx) in reviews" :key="idx">
+          <div class="slider-item">
+            <div class="video-frame">
+              <video :data-src="review.video" :data-poster="review.poster" :poster="lazyPoster" class="review-video"
+                preload="none" :ref="el => videoRefs[idx] = el" @click="togglePlayPause(idx)" @play="onVideoPlay(idx)"
+                @pause="onVideoPause(idx)" playsinline disablePictureInPicture>
+                Ваш браузер не поддерживает видео.
+              </video>
+              <button class="fs-btn" @click.stop="goFullscreen(idx)" aria-label="Full screen"></button>
+            </div>
+            <p class="review-name">{{ review.name }}</p>
+          </div>
+        </swiper-slide>
+      </swiper>
+
+      <!-- Кастомные кнопки навигации -->
+      <div class="swiper-button-prev-custom">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" />
+        </svg>
+      </div>
+      <div class="swiper-button-next-custom">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round" />
+        </svg>
+      </div>
+    </div>
   </section>
 </template>
 
 <script setup>
 import { Swiper, SwiperSlide } from 'swiper/vue';
+import { Navigation } from 'swiper/modules';
 import { ref, onMounted, onUnmounted } from 'vue';
 import 'swiper/css';
+import 'swiper/css/navigation';
+
+// Добавляем модуль Navigation
+const modules = [Navigation];
 
 const videoRefs = ref([]);
 let observer = null;
 
-// Заглушка для постера (можно заменить на свое изображение)
+// Заглушка для постера
 const lazyPoster = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDIwIiBoZWlnaHQ9Ijc0NyIgdmlld0JveD0iMCAwIDQyMCA3NDciIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MjAiIGhlaWdodD0iNzQ3IiBmaWxsPSIjMjIyIi8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNjY2IiBmb250LXNpemU9IjE2Ij7Qs9GA0YPQt9C40YLRgdGPLi4uPC90ZXh0Pgo8L3N2Zz4K';
 
 const reviews = [
@@ -39,10 +67,64 @@ const reviews = [
 
 // Адаптивные настройки Swiper
 const breakpoints = {
-  0: { slidesPerView: 1.5 },      // до 600px
-  600: { slidesPerView: 2 },      // 600px+
-  900: { slidesPerView: 3 },      // 900px+
-  1200: { slidesPerView: 4.5 }    // 1200px+
+  0: { slidesPerView: 1.5 },
+  600: { slidesPerView: 2 },
+  900: { slidesPerView: 3 },
+  1200: { slidesPerView: 4.5 }
+};
+
+// Функция для переключения play/pause при клике на видео
+const togglePlayPause = (videoIndex) => {
+  const v = videoRefs.value[videoIndex];
+  if (!v) return;
+
+  // Загружаем видео если еще не загружено
+  if (v.getAttribute('data-src')) {
+    loadVideo(v);
+  }
+
+  if (v.paused) {
+    v.play();
+  } else {
+    v.pause();
+  }
+};
+
+// Функция для полноэкранного режима
+const goFullscreen = (videoIndex) => {
+  const v = videoRefs.value[videoIndex];
+  if (!v) return;
+
+  // Сначала загружаем видео если оно еще не загружено
+  if (v.getAttribute('data-src')) {
+    loadVideo(v);
+  }
+
+  // iOS Safari
+  if (v.webkitEnterFullscreen) {
+    try {
+      v.webkitEnterFullscreen();
+      v.muted = false;
+      v.play();
+    } catch (_) { }
+    return;
+  }
+
+  // Other browsers
+  if (v.requestFullscreen) v.requestFullscreen();
+  try {
+    v.muted = false;
+    v.play();
+  } catch (_) { }
+};
+
+// Обработчики событий видео
+const onVideoPlay = (videoIndex) => {
+  console.log(`Video ${videoIndex} started playing`);
+};
+
+const onVideoPause = (videoIndex) => {
+  console.log(`Video ${videoIndex} paused`);
 };
 
 // Функция для ленивой загрузки
@@ -60,12 +142,10 @@ const loadVideo = (video) => {
     video.removeAttribute('data-poster');
   }
 
-  // Предзагрузка метаданных только после того, как видео в области видимости
   video.preload = 'metadata';
 };
 
 onMounted(() => {
-  // Создаем Intersection Observer для ленивой загрузки
   observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -75,10 +155,9 @@ onMounted(() => {
       }
     });
   }, {
-    rootMargin: '50px' // Начинаем загрузку за 50px до появления в области видимости
+    rootMargin: '50px'
   });
 
-  // Наблюдаем за всеми видео элементами
   videoRefs.value.forEach(video => {
     if (video) {
       observer.observe(video);
@@ -94,52 +173,59 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.swiper,
+.swiper-wrapper,
+.swiper-slide,
+.swiper-slide * {
+  user-select: none;
+  -webkit-user-select: none;
+  /* iOS/Safari */
+  -ms-user-select: none;
+}
+
+/* Мобильные “блики” при тапе */
+.swiper-slide a,
+.swiper-slide button {
+  -webkit-tap-highlight-color: transparent;
+}
+
 .section-title {
-  margin-bottom: 32px;
-  text-align: left;
-  padding-left: 24px;
+  text-align: center;
+  margin-bottom: 40px;
 }
 
 .section-title-text {
-  margin: 10px 0;
-  font-family: "Inter", "Inter Placeholder", sans-serif;
-  font-size: 20px;
-  font-style: normal;
-  font-weight: 500;
-  letter-spacing: 0.6px;
-  line-height: 100%;
-  text-transform: uppercase;
-  text-decoration: none;
-  text-align: start;
-  color: #b6b6b6;
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0;
+  color: #eaeaea;
 }
 
 .video-review-slider {
-  width: 100vw;
-  margin-left: calc(-50vw + 50%);
-  padding-bottom: 60px;
-  background: transparent;
-  position: relative;
-  overflow: hidden;
+  padding: 40px 20px;
+  background: #111;
 }
 
 .carousel {
-  width: 100%;
-  min-height: 220px;
-  height: auto;
+  padding: 20px 0;
 }
 
 .slider-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  padding: 0 10px;
+}
+
+.video-frame {
+  position: relative;
+  display: inline-block;
 }
 
 .review-video {
   width: 100%;
+  min-width: 270px;
   max-width: 420px;
+  max-height: 480px;
   aspect-ratio: 9/16;
   object-fit: cover;
   border-radius: 20px;
@@ -147,90 +233,277 @@ onUnmounted(() => {
   margin-bottom: 18px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
   transition: opacity 0.3s ease;
+  cursor: pointer;
+  /* Убираем стандартные контролы */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
+
 
 .review-video[data-src] {
   opacity: 0.7;
 }
 
-.fullscreen-video {
+.fs-btn {
+  position: absolute;
+  right: 12px;
+  bottom: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-radius: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+  z-index: 10;
+  transition: background 0.2s ease;
+}
+
+.fs-btn::before {
+  content: "⛶";
+  font-size: 16px;
+  line-height: 1;
+}
+
+.fs-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* Стили для полноэкранного режима */
+.review-video:fullscreen {
   width: 100vw;
   height: 100vh;
   max-width: 100vw;
   max-height: 100vh;
   object-fit: contain;
-  background: #222;
-  margin: 0 auto;
-  display: block;
+  background: #000;
+  border-radius: 0;
+  margin: 0;
+  box-shadow: none;
+  aspect-ratio: auto;
 }
+
+.review-video:-webkit-full-screen {
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  object-fit: contain;
+  background: #000;
+  border-radius: 0;
+  margin: 0;
+  box-shadow: none;
+  aspect-ratio: auto;
+}
+
+.review-video:-moz-full-screen {
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  object-fit: contain;
+  background: #000;
+  border-radius: 0;
+  margin: 0;
+  box-shadow: none;
+  aspect-ratio: auto;
+}
+
+.review-video:-ms-fullscreen {
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  object-fit: contain;
+  background: #000;
+  border-radius: 0;
+  margin: 0;
+  box-shadow: none;
+  aspect-ratio: auto;
+}
+
+
 
 .review-name {
-  font-size: 24px;
-  font-weight: 700;
   color: #eaeaea;
+  font-size: 18px;
+  font-weight: 600;
   margin: 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-  letter-spacing: 0.5px;
+  text-align: center;
 }
 
-/* Адаптив */
-@media (max-width: 1200px) {
-  .carousel {
-    min-height: 180px;
+
+
+@media (max-width: 1400px) {
+  .video-review-slider {
+    /* min-width: 250px; */
+    padding: 32px 16px;
   }
 
-  .review-video {
-    max-width: 320px;
-  }
-
-  .review-name {
-    font-size: 18px;
-  }
-
-  .section-title {
-    padding-left: 12px;
-    margin-bottom: 20px;
-  }
-
-  .section-title-text {
-    font-size: 16px;
+  .section-title_text {
+    font-size: 28px;
   }
 }
 
 @media (max-width: 900px) {
-  .carousel {
-    min-height: 140px;
-  }
-
   .review-video {
-    max-width: 220px;
+    /* min-width: 250px; */
+    max-width: 380px;
+    border-radius: 16px;
   }
 
-  .review-name {
-    font-size: 15px;
+  .section-title_text {
+    font-size: 24px;
   }
 }
 
 @media (max-width: 600px) {
-  .carousel {
-    min-height: 100px;
+  .video-review-slider {
+    padding: 24px 12px;
   }
 
   .review-video {
-    max-width: 90vw;
+    min-width: 230px;
+    max-width: 340px;
+    border-radius: 14px;
   }
 
-  .review-name {
-    font-size: 12px;
+  .section-title_text {
+    font-size: 22px;
   }
 
-  .section-title {
-    padding-left: 6px;
-    margin-bottom: 12px;
+  .fs-btn {
+    right: 8px;
+    bottom: 25px;
+    /* padding: 6px 8px; */
   }
 
-  .section-title-text {
-    font-size: 13px;
+  .fs-btn::before {
+    font-size: 22px;
+  }
+}
+
+/* ... existing styles ... */
+
+.swiper-container {
+  position: relative;
+}
+
+/* Кастомные кнопки навигации */
+.swiper-button-prev-custom,
+.swiper-button-next-custom {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50px;
+  height: 50px;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+  color: #fff;
+  backdrop-filter: blur(10px);
+}
+
+.swiper-button-prev-custom:focus,
+.swiper-button-next-custom:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
+}
+
+.swiper-button-prev-custom {
+  left: -25px;
+}
+
+.swiper-button-next-custom {
+  right: -25px;
+}
+
+.swiper-button-prev-custom:hover,
+.swiper-button-next-custom:hover {
+  background: rgba(0, 0, 0, 0.9);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.swiper-button-prev-custom:active,
+.swiper-button-next-custom:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+/* Состояние disabled */
+.swiper-button-prev-custom.swiper-button-disabled,
+.swiper-button-next-custom.swiper-button-disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Адаптив для кнопок */
+@media (max-width: 1200px) {
+  .swiper-button-prev-custom {
+    left: -20px;
+  }
+
+  .swiper-button-next-custom {
+    right: -20px;
+  }
+}
+
+@media (max-width: 900px) {
+
+  .swiper-button-prev-custom,
+  .swiper-button-next-custom {
+    width: 45px;
+    height: 45px;
+  }
+
+  .swiper-button-prev-custom {
+    left: -15px;
+  }
+
+  .swiper-button-next-custom {
+    right: -15px;
+  }
+}
+
+@media (max-width: 600px) {
+
+  .swiper-button-prev-custom,
+  .swiper-button-next-custom {
+    width: 40px;
+    height: 40px;
+  }
+
+  .swiper-button-prev-custom {
+    left: -10px;
+  }
+
+  .swiper-button-next-custom {
+    right: -10px;
+  }
+
+  .swiper-button-prev-custom svg,
+  .swiper-button-next-custom svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Скрываем кнопки на очень маленьких экранах */
+@media (max-width: 480px) {
+
+  .swiper-button-prev-custom,
+  .swiper-button-next-custom {
+    display: none;
   }
 }
 </style>

@@ -226,6 +226,21 @@ export default {
           video: "/gallery_of_works_video/012.MOV",
           poster: "/gallery_of_works_video/gallery_of_work_screen/13.png"
         },
+        {
+          slug: "non-work1",
+          video: "/gallery_of_works_video/013.mp4",
+          // poster: "/gallery_of_works_video/gallery_of_work_screen/13.png"
+        },
+        {
+          slug: "non-work2",
+          video: "/gallery_of_works_video/014.mp4",
+          // poster: "/gallery_of_works_video/gallery_of_work_screen/13.png"
+        },
+        {
+          slug: "non-work3",
+          video: "/gallery_of_works_video/015.mp4",
+          // poster: "/gallery_of_works_video/gallery_of_work_screen/13.png"
+        }
       ],
       isMobile: false,
     };
