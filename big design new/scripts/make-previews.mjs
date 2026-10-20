@@ -105,6 +105,16 @@ reviews.forEach((r) => {
   console.log(`отзыв: ${r.slug}`);
 });
 
+/* ---------- 5. Постер видео на финальном экране ---------- */
+
+// Оригинал — jpg 1920px на 700 КБ, а карточка на экране не шире ~900px.
+const INTRO_IN = path.join(PUBLIC, "video_with_instraction", "scren.jpg");
+const INTRO_OUT = path.join(PUBLIC, "video_with_instraction", "poster_1280.jpg");
+if (existsSync(INTRO_IN) && (FORCE || !isFresh(INTRO_OUT, INTRO_IN))) {
+  run(["-y", "-i", INTRO_IN, "-vf", "scale=1280:-2", "-q:v", "4", INTRO_OUT]);
+}
+console.log("финал: video_with_instraction/poster_1280.jpg");
+
 /* ---------- помощники ---------- */
 
 // Файл уже сделан и новее исходника — пережимать незачем.

@@ -7,7 +7,7 @@
   -->
   <section ref="panel" class="reviews" @touchstart.passive="onTouchStart" @touchend.passive="onTouchEnd">
     <SceneLights />
-    <SiteNav class="reveal" />
+    <SiteNav class="reveal" current="#reviews" />
 
     <header class="head">
       <p class="eyebrow reveal">{{ eyebrow }}</p>

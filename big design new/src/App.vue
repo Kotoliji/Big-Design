@@ -3,7 +3,8 @@
     Страница — стопка полноэкранных слайдов (.screen). Обычной прокрутки нет:
     колесо / свайп / стрелки уводят текущий слайд вверх, а следующий вводят снизу.
     Слайд 0 — колода работ и заставка (WorksStack), слайд 1 — о школе (AboutReveal),
-    слайд 2 — галерея работ (WorksGallery), слайд 3 — видео-отзывы (StudentReviews).
+    слайд 2 — галерея работ (WorksGallery), слайд 3 — видео-отзывы (StudentReviews),
+    слайд 4 — экосистема школы (EcosystemSlide), слайд 5 — финальный призыв (JoinSlide).
     Старая версия страницы целиком лежит в src/App.old.vue.
   -->
   <div ref="screen0" class="screen">
@@ -18,6 +19,12 @@
   <div ref="screen3" class="screen is-below">
     <StudentReviews ref="reviews" />
   </div>
+  <div ref="screen4" class="screen is-below">
+    <EcosystemSlide ref="ecosystem" />
+  </div>
+  <div ref="screen5" class="screen is-below">
+    <JoinSlide ref="join" />
+  </div>
 </template>
 
 <script>
@@ -25,6 +32,8 @@ import WorksStack from "./components/newDesign/WorksStack.vue";
 import AboutReveal from "./components/newDesign/AboutReveal.vue";
 import WorksGallery from "./components/newDesign/WorksGallery.vue";
 import StudentReviews from "./components/newDesign/StudentReviews.vue";
+import EcosystemSlide from "./components/newDesign/EcosystemSlide.vue";
+import JoinSlide from "./components/newDesign/JoinSlide.vue";
 
 // Длительность перехода между слайдами, мс.
 const SLIDE_MS = 1000;
@@ -36,12 +45,11 @@ const SWIPE_PX = 50;
 // Пауза в событиях колеса, после которой считаем, что начался новый жест, мс.
 const GESTURE_GAP_MS = 180;
 // Ссылки меню ведут на слайды, а не на якоря: прокрутки у страницы нет.
-// Экосистемы пока нет — ведёт на «О школе» (там про платформу).
-const NAV_SLIDES = { "#cg-arena": 0, "#ecosystem": 1, "#works": 2, "#reviews": 3 };
+const NAV_SLIDES = { "#cg-arena": 0, "#works": 2, "#reviews": 3, "#ecosystem": 4 };
 
 export default {
   name: "App",
-  components: { WorksStack, AboutReveal, WorksGallery, StudentReviews },
+  components: { WorksStack, AboutReveal, WorksGallery, StudentReviews, EcosystemSlide, JoinSlide },
   data() {
     return {
       current: 0,       // какой слайд сейчас на экране
@@ -55,11 +63,13 @@ export default {
   },
   computed: {
     screens() {
-      return [this.$refs.screen0, this.$refs.screen1, this.$refs.screen2, this.$refs.screen3];
+      const { screen0, screen1, screen2, screen3, screen4, screen5 } = this.$refs;
+      return [screen0, screen1, screen2, screen3, screen4, screen5];
     },
     // Компоненты слайдов — у них спрашиваем про внутренние шаги (см. step).
     slides() {
-      return [this.$refs.intro, this.$refs.about, this.$refs.gallery, this.$refs.reviews];
+      const { intro, about, gallery, reviews, ecosystem, join } = this.$refs;
+      return [intro, about, gallery, reviews, ecosystem, join];
     },
   },
   mounted() {
@@ -126,6 +136,7 @@ export default {
       this.unlocked = true;
       this.screens.forEach((el, n) => {
         el.classList.remove("is-below");
+        el.classList.toggle("is-off", n !== i);
         el.style.transform = `translate3d(0, ${(n - i) * 100}%, 0)`;
       });
       this.current = i;
@@ -139,7 +150,7 @@ export default {
       const el = this.screens[i];
       // Прошлую анимацию слайда снимаем — иначе они копятся друг на друге.
       this.anims[i]?.cancel();
-      el.classList.remove("is-below");
+      el.classList.remove("is-below", "is-off");
       this.anims[i] = el.animate(
         [
           { transform: `translate3d(0, ${fromY}%, 0)` },
@@ -156,13 +167,19 @@ export default {
       if (i === 1) this.$refs.about.enter(SLIDE_MS);
       if (i === 2) this.$refs.gallery.enter(SLIDE_MS);
       if (i === 3) this.$refs.reviews.enter(SLIDE_MS);
+      if (i === 4) this.$refs.ecosystem.enter(SLIDE_MS);
+      if (i === 5) this.$refs.join.enter(SLIDE_MS);
     },
-    // Слайд уехал за экран — выключаем его видео, чтобы не декодировать зря.
+    // Слайд уехал за экран — выключаем его видео, чтобы не декодировать зря,
+    // и прячем целиком: иначе браузер продолжает рисовать его лучи и слои за краем.
     afterLeave(i) {
+      this.screens[i].classList.add("is-off");
       if (i === 0) this.$refs.intro.pauseHero();
       if (i === 1) this.$refs.about.leave();
       if (i === 2) this.$refs.gallery.leave();
       if (i === 3) this.$refs.reviews.leave();
+      if (i === 4) this.$refs.ecosystem.leave();
+      if (i === 5) this.$refs.join.leave();
     },
 
     /* ---------- ввод ---------- */
@@ -218,5 +235,12 @@ export default {
 /* Стартовое положение ещё не показанных слайдов — под экраном. */
 .screen.is-below {
   transform: translate3d(0, 100%, 0);
+}
+
+/* Слайды за краем не рисуем вовсе: каждый со своими лучами и крупными слоями,
+   и шесть таких «невидимых» экранов роняли плавность интро втрое. */
+.screen.is-below,
+.screen.is-off {
+  visibility: hidden;
 }
 </style>

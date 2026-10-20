@@ -1,9 +1,16 @@
 <template>
-  <!-- Верхнее меню. Одинаковое на всех тёмных экранах. -->
+  <!-- Верхнее меню. Одинаковое на всех тёмных экранах; current — раздел, в котором мы сейчас.
+       Ссылки #… переключают слайды (их ловит App.vue). -->
   <header class="site-nav">
-    <span class="brand">BigDesign</span>
+    <a class="brand" href="#cg-arena">BigDesign</a>
     <nav class="links" aria-label="Main">
-      <a v-for="link in links" :key="link.href" :href="link.href">{{ link.label }}</a>
+      <a
+        v-for="link in links"
+        :key="link.href"
+        :href="link.href"
+        :class="{ 'is-current': link.href === current }"
+        :aria-current="link.href === current ? 'true' : null"
+      >{{ link.label }}</a>
     </nav>
     <a class="join" :href="joinUrl">{{ joinLabel }}</a>
   </header>
@@ -22,6 +29,7 @@ export default {
         { label: "Reviews", href: "#reviews" },
       ],
     },
+    current: { type: String, default: "" }, // href текущего раздела, например "#works"
     joinLabel: { type: String, default: "Join" },
     joinUrl: { type: String, default: "https://web.tribute.tg/s/Alp" },
   },
@@ -43,7 +51,9 @@ export default {
 }
 
 .brand {
+  color: inherit;
   font-size: clamp(18px, 1.35vw, 24px);
+  text-decoration: none;
 }
 
 .links {
@@ -65,6 +75,14 @@ export default {
 
 .links a:hover {
   color: #fff;
+}
+
+/* Текущий раздел — тонкая линия снизу, без лишнего акцента. */
+.links a.is-current {
+  color: #fff;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 8px;
 }
 
 .join {

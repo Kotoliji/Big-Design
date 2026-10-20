@@ -8,7 +8,7 @@
     <SceneLights :lit="playing" />
 
     <div class="content">
-      <SiteNav class="reveal" />
+      <SiteNav class="reveal" current="#cg-arena" />
 
       <SideLabels :items="sideLeft" />
       <SideLabels :items="sideRight" align="right" />

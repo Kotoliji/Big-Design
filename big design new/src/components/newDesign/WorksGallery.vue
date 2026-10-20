@@ -12,14 +12,15 @@
     @pointermove="onPointer"
   >
     <SceneLights />
-    <SiteNav class="reveal" />
+    <!-- Пока открыт просмотр, всё за ним inert: Tab не уходит из окна на карточки и меню. -->
+    <SiteNav class="reveal" current="#works" :inert="openIndex !== null" />
 
-    <header class="head">
+    <header class="head" :inert="openIndex !== null">
       <p class="eyebrow reveal">{{ eyebrow }}</p>
       <h2 class="title reveal">{{ title }}</h2>
     </header>
 
-    <div class="stage">
+    <div class="stage" :inert="openIndex !== null">
       <div ref="hall" class="hall">
         <button
           v-for="(card, i) in cards"
@@ -109,8 +110,9 @@ import { works as WORKS } from "../../data/works.js";
 const SLOTS = ["h", "v", "v", "h", "v", "h"];
 const EASE = "cubic-bezier(.65,0,.2,1)";
 const EASE_OUT = "cubic-bezier(.2,.7,.2,1)";
-const NEAR = "translateZ(700px)";  // мимо камеры
-const FAR = "translateZ(-1800px)"; // из темноты
+// Глубина в vh, как и перспектива: тогда раскладка одинакова на экране любой высоты.
+const NEAR = "translateZ(65vh)";   // мимо камеры
+const FAR = "translateZ(-167vh)";  // из темноты
 
 // Делим работы на волны поровну (16 → 6, 5, 5) и раскладываем по местам нужной ориентации.
 // Не хватило вертикальных или горизонтальных — берём из другой стопки.
@@ -256,9 +258,15 @@ export default {
       const leaving = this.bodiesOf(this.wave);
       const entering = this.bodiesOf(next);
       const [outTo, inFrom] = dir > 0 ? [NEAR, FAR] : [FAR, NEAR];
+      // Фокус клавиатуры был на карточке уходящей волны — переносим на главную новой, иначе он теряется.
+      const hadFocus = this.$refs.hall.contains(document.activeElement);
       this.leavingWave = this.wave;
       this.wave = next;
       this.hovered = null;
+      if (hadFocus) {
+        const main = this.cards.findIndex((c) => c.wave === next && c.slot === 0);
+        this.$nextTick(() => this._cardEls[main]?.focus({ preventScroll: true }));
+      }
 
       // Уходящие улетают с разгоном, а гаснут сразу и быстро (отдельной анимацией: у них своя кривая) —
       // иначе огромная полупрозрачная карточка мутит новую волну. Новые стартуют чуть позже и тормозят на месте.
@@ -519,11 +527,12 @@ export default {
   letter-spacing: -0.01em;
 }
 
-/* Зал: перспектива на сцене, карточки расставлены в глубину (translateZ). */
+/* Зал: перспектива на сцене, карточки расставлены в глубину (translateZ). Перспектива и глубина
+   в vh — коэффициент P / (P − z) не зависит от высоты экрана, раскладка не плывёт на 1440p. */
 .stage {
   position: absolute;
   inset: 0;
-  perspective: max(1000px, 125vh);
+  perspective: 125vh;
 }
 
 /* Сам зал — плоскость на z = 0 во весь экран: для мыши всё, что глубже, оказалось бы «за» ней.
@@ -539,12 +548,20 @@ export default {
    --dim — затемнение дальних (туда меньше доходит свет). Перспектива стягивает глубокие
    карточки к центру в P / (P − z) раз, поэтому --x/--y дальних вынесены за край —
    на экране они встают в свободные места: справа сверху и под главной. */
-.slot-0 { --x: 50%;   --y: 52%;   --z: 0px;     --h: 38vh; --dim: 0; }
-.slot-1 { --x: 11.6%; --y: 58%;   --z: -220px;  --h: 50vh; --dim: 0.2; }
-.slot-2 { --x: 88.4%; --y: 45.3%; --z: -220px;  --h: 50vh; --dim: 0.2; }
-.slot-3 { --x: 81.7%; --y: -5%;   --z: -900px;  --h: 24vh; --dim: 0.5; }
-.slot-4 { --x: 18.3%; --y: 108%;  --z: -900px;  --h: 30vh; --dim: 0.5; }
-.slot-5 { --x: 73.6%; --y: 117%;  --z: -1100px; --h: 22vh; --dim: 0.55; }
+.slot-0 { --x: 50%;   --y: 52%;   --z: 0vh;      --h: 38vh; --dim: 0; }
+.slot-1 { --x: 11.6%; --y: 58%;   --z: -20.4vh;  --h: 50vh; --dim: 0.2; }
+.slot-2 { --x: 88.4%; --y: 45.3%; --z: -20.4vh;  --h: 50vh; --dim: 0.2; }
+.slot-3 { --x: 81.7%; --y: -5%;   --z: -83.3vh;  --h: 24vh; --dim: 0.5; }
+.slot-4 { --x: 18.3%; --y: 108%;  --z: -83.3vh;  --h: 30vh; --dim: 0.5; }
+.slot-5 { --x: 73.6%; --y: 117%;  --z: -101.9vh; --h: 22vh; --dim: 0.55; }
+
+/* Экран 4:3: по ширине места меньше — главная и боковые чуть мельче, чтобы не наезжали. */
+@media (max-aspect-ratio: 4/3) {
+  .slot-0 { --h: 32vh; }
+  .slot-1,
+  .slot-2 { --h: 44vh; }
+  .slot-4 { --h: 24vh; } /* иначе низ упирается в подпись «01 / 03» */
+}
 
 .card {
   position: absolute;
@@ -604,14 +621,25 @@ export default {
   pointer-events: none;
 }
 
-.card:hover .card-media,
 .card:focus-visible .card-media {
   transform: translateZ(60px);
 }
 
-.card:hover .card-media::after,
 .card:focus-visible .card-media::after {
   opacity: 0;
+}
+
+/* Наведение — только там, где есть мышь: на телефоне после тапа карточка «залипала» поднятой. */
+@media (hover: hover) {
+  .card:hover .card-media {
+    transform: translateZ(60px);
+  }
+  .card:hover .card-media::after {
+    opacity: 0;
+  }
+  .card:hover .card-name {
+    opacity: 1;
+  }
 }
 
 .card:focus-visible .card-media {
@@ -655,7 +683,6 @@ export default {
 }
 
 .slot-0 .card-name,
-.card:hover .card-name,
 .card:focus-visible .card-name {
   opacity: 1;
 }
@@ -781,9 +808,9 @@ export default {
   .slot-0 { --x: 50%;  --y: 47%;  --h: 24vh; }
   .slot-1 { --x: 24%;  --y: 75%;  --h: 28vh; }
   .slot-2 { --x: 76%;  --y: 73%;  --h: 28vh; }
-  .slot-3 { --x: -2%;  --y: 8.3%; --h: 17vh; }
-  .slot-4 { --x: 50%;  --y: 8.3%; --h: 20vh; }
-  .slot-5 { --x: 107%; --y: 4.1%; --h: 19vh; }
+  .slot-3 { --x: 3.4%;   --y: 12.6%; --h: 15.3vh; }
+  .slot-4 { --x: 50%;    --y: 12.6%; --h: 17.8vh; }
+  .slot-5 { --x: 100.8%; --y: 9.2%;  --h: 16.7vh; }
 
   .viewer {
     --frame-w: min(92vw, calc(70vh * var(--ratio)));
