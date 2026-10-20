@@ -11,6 +11,7 @@ import { existsSync, mkdirSync, statSync } from "node:fs";
 import path from "node:path";
 import ffmpeg from "ffmpeg-static";
 import { works } from "../src/data/works.js";
+import { reviews } from "../src/data/reviews.js";
 
 const PUBLIC = path.resolve("public");
 const FORCE = process.argv.includes("--force");
@@ -88,6 +89,20 @@ works.forEach((w) => {
     "-crf", "23", "-profile:v", "high",
   ], { audio: true });
   console.log(`работа: ${w.slug}`);
+});
+
+/* ---------- 4. Постеры видео-отзывов ---------- */
+
+// Исходники — png по полмегабайта; на экране карточка не выше ~600px, хватает jpg.
+const REVIEW_DIR = path.join(PUBLIC, "gallery_of_works_review", "web");
+mkdirSync(REVIEW_DIR, { recursive: true });
+
+reviews.forEach((r) => {
+  const input = path.join(PUBLIC, r.poster);
+  const output = path.join(REVIEW_DIR, `${r.slug}.jpg`);
+  if (!existsSync(input)) return console.warn(`пропуск ${r.slug}: нет файла ${r.poster}`);
+  if (FORCE || !isFresh(output, input)) run(["-y", "-i", input, "-vf", "scale=600:-2", "-q:v", "4", output]);
+  console.log(`отзыв: ${r.slug}`);
 });
 
 /* ---------- помощники ---------- */

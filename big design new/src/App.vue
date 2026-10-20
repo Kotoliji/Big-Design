@@ -3,7 +3,8 @@
     Страница — стопка полноэкранных слайдов (.screen). Обычной прокрутки нет:
     колесо / свайп / стрелки уводят текущий слайд вверх, а следующий вводят снизу.
     Слайд 0 — колода работ и заставка (WorksStack), слайд 1 — о школе (AboutReveal),
-    слайд 2 — галерея работ (WorksGallery). Старая версия страницы целиком лежит в src/App.old.vue.
+    слайд 2 — галерея работ (WorksGallery), слайд 3 — видео-отзывы (StudentReviews).
+    Старая версия страницы целиком лежит в src/App.old.vue.
   -->
   <div ref="screen0" class="screen">
     <WorksStack ref="intro" @done="onIntroDone" />
@@ -14,12 +15,16 @@
   <div ref="screen2" class="screen is-below">
     <WorksGallery ref="gallery" />
   </div>
+  <div ref="screen3" class="screen is-below">
+    <StudentReviews ref="reviews" />
+  </div>
 </template>
 
 <script>
 import WorksStack from "./components/newDesign/WorksStack.vue";
 import AboutReveal from "./components/newDesign/AboutReveal.vue";
 import WorksGallery from "./components/newDesign/WorksGallery.vue";
+import StudentReviews from "./components/newDesign/StudentReviews.vue";
 
 // Длительность перехода между слайдами, мс.
 const SLIDE_MS = 1000;
@@ -30,10 +35,13 @@ const COOLDOWN_MS = 450;
 const SWIPE_PX = 50;
 // Пауза в событиях колеса, после которой считаем, что начался новый жест, мс.
 const GESTURE_GAP_MS = 180;
+// Ссылки меню ведут на слайды, а не на якоря: прокрутки у страницы нет.
+// Экосистемы пока нет — ведёт на «О школе» (там про платформу).
+const NAV_SLIDES = { "#cg-arena": 0, "#ecosystem": 1, "#works": 2, "#reviews": 3 };
 
 export default {
   name: "App",
-  components: { WorksStack, AboutReveal, WorksGallery },
+  components: { WorksStack, AboutReveal, WorksGallery, StudentReviews },
   data() {
     return {
       current: 0,       // какой слайд сейчас на экране
@@ -47,11 +55,11 @@ export default {
   },
   computed: {
     screens() {
-      return [this.$refs.screen0, this.$refs.screen1, this.$refs.screen2];
+      return [this.$refs.screen0, this.$refs.screen1, this.$refs.screen2, this.$refs.screen3];
     },
     // Компоненты слайдов — у них спрашиваем про внутренние шаги (см. step).
     slides() {
-      return [this.$refs.intro, this.$refs.about, this.$refs.gallery];
+      return [this.$refs.intro, this.$refs.about, this.$refs.gallery, this.$refs.reviews];
     },
   },
   mounted() {
@@ -59,6 +67,7 @@ export default {
     window.addEventListener("keydown", this.onKey);
     window.addEventListener("touchstart", this.onTouchStart, { passive: true });
     window.addEventListener("touchend", this.onTouchEnd, { passive: true });
+    document.addEventListener("click", this.onNavClick);
 
     // Для разработки: ?slide=1 в адресе — сразу открыть нужный слайд, без интро.
     const startSlide = Number(new URLSearchParams(location.search).get("slide"));
@@ -69,6 +78,7 @@ export default {
     window.removeEventListener("keydown", this.onKey);
     window.removeEventListener("touchstart", this.onTouchStart);
     window.removeEventListener("touchend", this.onTouchEnd);
+    document.removeEventListener("click", this.onNavClick);
   },
   methods: {
     // Интро закончилось (логотип погас) — разрешаем листать.
@@ -145,12 +155,14 @@ export default {
       if (i === 0) this.$refs.intro.resumeHero();
       if (i === 1) this.$refs.about.enter(SLIDE_MS);
       if (i === 2) this.$refs.gallery.enter(SLIDE_MS);
+      if (i === 3) this.$refs.reviews.enter(SLIDE_MS);
     },
     // Слайд уехал за экран — выключаем его видео, чтобы не декодировать зря.
     afterLeave(i) {
       if (i === 0) this.$refs.intro.pauseHero();
       if (i === 1) this.$refs.about.leave();
       if (i === 2) this.$refs.gallery.leave();
+      if (i === 3) this.$refs.reviews.leave();
     },
 
     /* ---------- ввод ---------- */
@@ -169,6 +181,15 @@ export default {
       if (e.key === " " && e.target.closest?.("button, a, input, textarea, select")) return;
       if (["ArrowDown", "PageDown", " "].includes(e.key)) this.step(1);
       if (["ArrowUp", "PageUp"].includes(e.key)) this.step(-1);
+    },
+    // Меню есть на каждом слайде — ловим клики по его ссылкам здесь, одним обработчиком.
+    onNavClick(e) {
+      const link = e.target.closest?.('a[href^="#"]');
+      const target = link && NAV_SLIDES[link.getAttribute("href")];
+      if (target === undefined || target === null) return;
+      e.preventDefault();
+      if (!this.unlocked || Date.now() < this.lockUntil) return;
+      this.goTo(target);
     },
     onTouchStart(e) {
       this.touchY = e.touches[0].clientY;
