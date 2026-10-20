@@ -1,0 +1,14 @@
+{
+  "installCommand": "cd \"big design new\" && npm ci",
+  "buildCommand": "cd \"big design new\" && npm run build",
+  "outputDirectory": "big design new/dist",
+  "headers": [
+    {
+      "source": "/(.*)\\.(mp4|webm|ogg)$",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" },
+        { "key": "Accept-Ranges", "value": "bytes" }
+      ]
+    }
+  ]
+}
