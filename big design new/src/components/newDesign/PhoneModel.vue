@@ -54,6 +54,7 @@ const CFG = {
   focusSway: 0.05,    // в центре телефон почти не качается — по клавишам легко попасть
   focusMouse: 0.05,
   swing: 0.45,        // разворот по дороге, радианы: телефон выезжает чуть боком
+  stillMs: 300,       // замирание анфас перед нырком в экран
 
   // --- кнопки ---
   accent: 0x4d7dff,
@@ -89,8 +90,10 @@ const SCREEN = {
   glowBlur: 18,
   bg: "#05070c",
   dim: "#8e9ab5",     // вторичный текст
-  // Видимая часть экрана в долях текстуры: низ меша прячется под рамкой корпуса.
+  // Где раскладывать текст, в долях текстуры: низ меша прячется под рамкой корпуса.
   area: { top: 0.06, bottom: 0.56 },
+  // Окно, которое реально видно сквозь рамку (подобрано по модели) — для нырка в экран.
+  window: { top: 0, bottom: 0.62, right: 0.934 },
   step: { label: 46, title: 104, line: 42, meta: 40 }, // кегли на экране шага
   // Смена шага: экран гаснет, в темноте меняется картинка, разгорается. Яркость — цвет материала,
   // без перерисовки: каждая перерисовка — это заливка большой текстуры, ~1 рывок кадра.
@@ -142,6 +145,8 @@ export default {
     // Телефон выехал в центр: клавиши-кнопки работают.
     focused: { type: Boolean, default: false },
     focusMs: { type: Number, default: 1100 },
+    // Перед нырком в экран (AboutReveal): телефон замирает строго анфас.
+    diving: { type: Boolean, default: false },
     // Какую часть высоты своего места занимает телефон.
     fill: { type: Number, default: 0.62 },
     // Шаг на экране: { index, total, title, lines }.
@@ -177,6 +182,12 @@ export default {
       t.hover = -1;
       this.$refs.root.style.cursor = "";
       if (!t.running) this.draw(now);
+    },
+    diving(on) {
+      const t = this._t;
+      if (!t) return;
+      const now = performance.now();
+      t.stillAnim = { from: this.stillAt(now), to: on ? 1 : 0, start: now };
     },
     screen(next, prev) {
       const t = this._t;
@@ -271,6 +282,8 @@ export default {
           focus: { pos: new THREE.Vector3(), scale: 1 },
         },
         focusAnim: { from: focus, to: focus, start: 0 }, // выезд в центр: откуда, куда, когда начался
+        stillAnim: { from: 0, to: 0, start: 0 },         // замирание перед нырком в экран
+        screenBox: null,                                 // рамка меша экрана в координатах pivot
         view: { w: 1, h: 1 },             // весь слой, px — "кадр", из которого холст показывает кусок
         box: { w: 1, h: 1 },              // размер холста, px
         offset: { x: NaN, y: NaN },       // где сейчас холст в слое, px
@@ -368,6 +381,7 @@ export default {
         const aspect = this.mapScreenUV(display);
         display.material = new THREE.MeshBasicMaterial({ map: this.makeScreen(aspect), toneMapped: false });
         t.screen.material = display.material; // его цветом гасим экран при смене шага
+        t.screenBox = new THREE.Box3().setFromObject(display); // для screenSnapshot (нырок в экран)
       }
       this.setupKeys(keys);
       this.addShadow();
@@ -564,7 +578,7 @@ export default {
 
       ctx.font = `${SCREEN.step.label}px "${SCREEN.font}", monospace`;
       ctx.fillStyle = SCREEN.dim;
-      ctx.fillText(`STEP ${index + 1}`, pad, top + band * 0.12);
+      ctx.fillText(this.screen.label ?? `STEP ${index + 1}`, pad, top + band * 0.12);
 
       ctx.font = `${SCREEN.step.title}px "${SCREEN.font}", monospace`;
       ctx.fillStyle = SCREEN.color;
@@ -576,17 +590,19 @@ export default {
       ctx.fillStyle = SCREEN.dim;
       lines.forEach((line, n) => ctx.fillText(line, pad, top + band * (0.55 + n * 0.11)));
 
-      // Прогресс: полоска слева, счётчик справа.
-      const barY = top + band * 0.9;
-      const barW = w * 0.32;
-      ctx.fillStyle = "rgba(160,178,214,0.25)";
-      ctx.fillRect(pad, barY, barW, 5);
-      ctx.fillStyle = SCREEN.color;
-      ctx.fillRect(pad, barY, (barW * (index + 1)) / total, 5);
-      ctx.font = `${SCREEN.step.meta}px "${SCREEN.font}", monospace`;
-      ctx.fillStyle = SCREEN.dim;
-      ctx.textAlign = "right";
-      ctx.fillText(`0${index + 1} / 0${total}`, w - pad, barY);
+      // Прогресс: полоска слева, счётчик справа. У служебного экрана (index < 0) его нет.
+      if (index >= 0) {
+        const barY = top + band * 0.9;
+        const barW = w * 0.32;
+        ctx.fillStyle = "rgba(160,178,214,0.25)";
+        ctx.fillRect(pad, barY, barW, 5);
+        ctx.fillStyle = SCREEN.color;
+        ctx.fillRect(pad, barY, (barW * (index + 1)) / total, 5);
+        ctx.font = `${SCREEN.step.meta}px "${SCREEN.font}", monospace`;
+        ctx.fillStyle = SCREEN.dim;
+        ctx.textAlign = "right";
+        ctx.fillText(`0${index + 1} / 0${total}`, w - pad, barY);
+      }
 
       ctx.drawImage(layer.scan, 0, 0);
       layer.tex.needsUpdate = true;
@@ -771,6 +787,49 @@ export default {
       return nudge;
     },
 
+    // Насколько телефон замер перед нырком: 0 — обычное парение, 1 — неподвижен анфас.
+    stillAt(now) {
+      const { from, to, start } = this._t.stillAnim;
+      const u = Math.min(1, (now - start) / CFG.stillMs);
+      return from + (to - from) * (1 - (1 - u) ** 3);
+    },
+
+    // Для нырка в экран (AboutReveal): где на странице окно экрана и что в нём нарисовано.
+    // Окно — SCREEN.window текстуры: края меша экрана прячутся под рамкой корпуса.
+    screenSnapshot() {
+      const t = this._t;
+      const box = t?.screenBox;
+      if (!box || !t.screen) return null;
+      const win = SCREEN.window;
+      const height = box.max.y - box.min.y;
+      const top = box.max.y - height * win.top;
+      const bottom = box.max.y - height * win.bottom;
+      const right = box.min.x + (box.max.x - box.min.x) * win.right;
+      const canvas = this.$refs.canvas.getBoundingClientRect();
+      const v = new THREE.Vector3();
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      for (const x of [box.min.x, right]) {
+        for (const y of [top, bottom]) {
+          v.set(x, y, box.max.z).applyMatrix4(t.pivot.matrixWorld).project(t.camera);
+          const px = canvas.left + ((v.x + 1) / 2) * canvas.width;
+          const py = canvas.top + ((1 - v.y) / 2) * canvas.height;
+          minX = Math.min(minX, px); maxX = Math.max(maxX, px);
+          minY = Math.min(minY, py); maxY = Math.max(maxY, py);
+        }
+      }
+      const image = t.screen.ctx.canvas;
+      return {
+        rect: { left: minX, top: minY, width: maxX - minX, height: maxY - minY },
+        image,
+        crop: {
+          sx: 0,
+          sy: image.height * win.top,
+          sw: image.width * win.right,
+          sh: image.height * (win.bottom - win.top),
+        },
+      };
+    },
+
     // Насколько телефон выехал в центр: 0 — на своём месте, 1 — в центре. Плавно с обоих концов.
     focusAt(now) {
       const { from, to, start } = this._t.focusAnim;
@@ -900,11 +959,13 @@ export default {
       const mouse = lerp(CFG.mouse, CFG.focusMouse, f);
       const swing = Math.sin(Math.PI * f) * CFG.swing; // боком по дороге, пик — на полпути
       const nudge = this.animateButtons(now, f);
-      const yaw = Math.sin(time * CFG.swaySpeed) * sway + t.look.x * mouse + swing + nudge.yaw;
+      // Перед нырком в экран всё движение гаснет: телефон встаёт строго анфас (k → 0).
+      const k = 1 - this.stillAt(now);
+      const yaw = (Math.sin(time * CFG.swaySpeed) * sway + t.look.x * mouse + swing + nudge.yaw) * k;
       const pitch =
-        Math.sin(time * CFG.swaySpeed * 0.7 + 1) * 0.06 * (1 - f * 0.7) - t.look.y * mouse * 0.5 + nudge.pitch;
-      t.pivot.rotation.set(pitch, yaw, CFG.baseTilt * (1 - f));
-      t.pivot.position.y = Math.sin(time * 0.9) * CFG.bob * 2 * (1 - f * 0.5);
+        (Math.sin(time * CFG.swaySpeed * 0.7 + 1) * 0.06 * (1 - f * 0.7) - t.look.y * mouse * 0.5 + nudge.pitch) * k;
+      t.pivot.rotation.set(pitch, yaw, CFG.baseTilt * (1 - f) * k);
+      t.pivot.position.y = Math.sin(time * 0.9) * CFG.bob * 2 * (1 - f * 0.5) * k;
 
       if (t.running) this.paintScreen(now);
       const screen = t.screen;

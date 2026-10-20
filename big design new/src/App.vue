@@ -44,6 +44,10 @@ const COOLDOWN_MS = 450;
 const SWIPE_PX = 50;
 // Пауза в событиях колеса, после которой считаем, что начался новый жест, мс.
 const GESTURE_GAP_MS = 180;
+// Нырок в экран телефона (слайд 1 → 2): полёт в экран; до него ~0.4 с подготовки (AboutReveal),
+// после — DIVE_FADE_MS галерея проявляется из темноты.
+const DIVE_MS = 900;
+const DIVE_FADE_MS = 400;
 // Ссылки меню ведут на слайды, а не на якоря: прокрутки у страницы нет.
 const NAV_SLIDES = { "#cg-arena": 0, "#works": 2, "#reviews": 3, "#ecosystem": 4 };
 
@@ -112,6 +116,7 @@ export default {
 
     async goTo(target) {
       if (target < 0 || target >= this.screens.length || target === this.current) return;
+      if (this.current === 1 && target === 2 && this.$refs.about.canDive()) return this.diveToGallery();
       this.lockUntil = Date.now() + SLIDE_MS + COOLDOWN_MS;
 
       const from = this.current;
@@ -128,6 +133,31 @@ export default {
       await this.animateScreen(target, [100 * dir, 0], opts).finished;
 
       this.afterLeave(from);
+    },
+
+    // Вместо обычного сдвига слайдов: телефон влетает экраном в камеру, а из темноты проявляется
+    // галерея — её работы и так выходят из глубины. Обратно (вверх) — обычный переход.
+    async diveToGallery() {
+      this.lockUntil = Date.now() + 400 + DIVE_MS + DIVE_FADE_MS + COOLDOWN_MS;
+      this.current = 2;
+      await this.$refs.about.dive(DIVE_MS);
+
+      const gallery = this.screens[2];
+      const still = "translate3d(0, 0, 0)";
+      this.anims[2]?.cancel();
+      gallery.classList.remove("is-below", "is-off");
+      // fill: forwards держит слайд на месте, как и у обычного перехода (animateScreen).
+      this.anims[2] = gallery.animate(
+        [
+          { transform: still, opacity: 0 },
+          { transform: still, opacity: 1 },
+        ],
+        { duration: DIVE_FADE_MS, easing: "ease-out", fill: "forwards" }
+      );
+      this.$refs.gallery.enter(DIVE_FADE_MS);
+      // Слайд «О школе» (уже чёрный) прячем, только когда галерея его закрыла: под ним белый фон страницы.
+      await this.anims[2].finished;
+      this.afterLeave(1);
     },
 
     // Мгновенно поставить слайд i на экран (без анимации).

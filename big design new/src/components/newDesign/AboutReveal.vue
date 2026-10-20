@@ -13,8 +13,10 @@
     <div ref="device" class="device reveal" :class="{ 'is-video': phoneMode === 'video' }" aria-hidden="true">
       <PhoneModel
         v-if="prepared"
+        ref="phone"
         :active="live"
         :focused="focused"
+        :diving="diving"
         :focus-ms="focusMs"
         :fill="phoneFill"
         :screen="phoneScreen"
@@ -56,6 +58,12 @@
         <span aria-hidden="true">←</span> {{ backLabel }}
       </button>
     </div>
+
+    <!-- Нырок в экран (см. dive): плоская копия экрана телефона и затемнение поверх всего. -->
+    <div v-show="diveOn" ref="dive" class="dive" aria-hidden="true">
+      <canvas ref="diveCanvas"></canvas>
+    </div>
+    <div ref="veil" class="dive-veil" aria-hidden="true"></div>
   </section>
 </template>
 
@@ -64,6 +72,9 @@ import { defineAsyncComponent } from "vue";
 import SceneLights from "./SceneLights.vue";
 import SideLabels from "./SideLabels.vue";
 import SiteNav from "./SiteNav.vue";
+
+// Перед нырком в экран: экран успевает мигнуть и сменить надпись, устройство — замереть анфас.
+const DIVE_PREP_MS = 380;
 
 // Шаги курса. lines — то, что видно на экране устройства (коротко: там мелко).
 // icon — клавиша устройства, которая включает шаг (см. ICONS в PhoneModel).
@@ -117,6 +128,11 @@ export default {
     fallbackSrc: { type: String, default: "/description_video/web/16_08_1080.mp4" },
     phoneFill: { type: Number, default: 0.92 }, // доля высоты места под устройство
     focusMs: { type: Number, default: 1100 }, // выезд устройства в центр и обратно
+    // Что показывает экран устройства перед нырком в галерею.
+    diveScreen: {
+      type: Object,
+      default: () => ({ index: -1, total: 0, label: "NEXT", title: "STUDENT WORKS", lines: ["Made by our students."] }),
+    },
     stagger: { type: Number, default: 110 },
     autoMs: { type: Number, default: 6000 }, // сам листает шаги, пока их не трогали
   },
@@ -126,6 +142,8 @@ export default {
       live: false,
       revealed: false, // анимация появления отыграла — устройство видно и откликается
       focused: false,
+      diving: false,   // нырок в экран: устройство замирает, на экране — diveScreen
+      diveOn: false,   // показана плоская копия экрана, которая раздувается на весь вид
       activeStep: 0,
       phoneMode: "loading",
       anims: [],
@@ -134,6 +152,7 @@ export default {
   },
   computed: {
     phoneScreen() {
+      if (this.diving) return this.diveScreen;
       const step = this.steps[this.activeStep];
       return {
         index: this.activeStep,
@@ -195,6 +214,7 @@ export default {
     },
 
     leave() {
+      this.resetDive();
       this.live = false;
       this.revealed = false;
       this.focused = false;
@@ -210,6 +230,62 @@ export default {
       if (!this.revealed || this.phoneMode !== "3d" || wantFocus === this.focused) return 0;
       this.setFocus(wantFocus);
       return this.focusMs;
+    },
+
+    // Нырять в экран можно, только когда устройство в центре и это 3D (у запасного видео экрана нет).
+    canDive() {
+      return this.focused && this.phoneMode === "3d" && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+    },
+
+    // Нырок в экран (вызывает App.vue при шаге вниз с устройством в центре). На экране — diveScreen,
+    // устройство замирает анфас; затем плоская копия экрана раздувается на весь вид, корпус летит
+    // на зрителя и растворяется, всё гаснет. Промис выполняется, когда наступила темнота.
+    // Копия, а не зум 3D-сцены: холст на весь экран стоил ~20 мс кадра, а один слой CSS — почти ничего.
+    async dive(ms) {
+      this.diving = true;
+      await new Promise((resolve) => setTimeout(resolve, DIVE_PREP_MS)); // мигание экрана + замирание
+      const { panel, device, dive, diveCanvas, veil } = this.$refs;
+      const snap = this.$refs.phone?.screenSnapshot();
+      const area = panel.getBoundingClientRect();
+      const opts = { duration: ms, easing: "cubic-bezier(.55,0,.75,.25)", fill: "forwards" }; // разгон — влетаем
+      const fadeUi = [...panel.querySelectorAll(".site-nav, .labels, .focus-ui")].map((el) =>
+        el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: ms * 0.4, fill: "forwards" })
+      );
+      const darken = veil.animate([{ opacity: 0 }, { opacity: 0, offset: 0.6 }, { opacity: 1 }], opts);
+      this._diveAnims = [...fadeUi, darken];
+
+      if (snap) {
+        // Копия экрана — ровно поверх настоящего.
+        const r = { ...snap.rect, left: snap.rect.left - area.left, top: snap.rect.top - area.top };
+        const { sx, sy, sw, sh } = snap.crop;
+        diveCanvas.width = sw;
+        diveCanvas.height = sh;
+        diveCanvas.getContext("2d").drawImage(snap.image, sx, sy, sw, sh, 0, 0, sw, sh);
+        Object.assign(dive.style, { left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px` });
+        this.diveOn = true;
+        // Центр экрана — в центр вида, масштаб — чтобы закрыть вид с запасом. Корпус летит так же.
+        const scale = Math.max(area.width / r.width, area.height / r.height) * 1.1;
+        const dx = area.width / 2 - (r.left + r.width / 2);
+        const dy = area.height / 2 - (r.top + r.height / 2);
+        const zoom = `translate(${dx}px, ${dy}px) scale(${scale})`;
+        device.style.transformOrigin = `${r.left + r.width / 2}px ${r.top + r.height / 2}px`;
+        this._diveAnims.push(
+          // Копия проявляется поверх настоящего экрана коротко (8%): стык не «щёлкает»,
+          // а двоение текста на полупрозрачной копии не успевает стать заметным.
+          dive.animate([{ transform: "none", opacity: 0 }, { opacity: 1, offset: 0.08 }, { transform: zoom, opacity: 1 }], opts),
+          device.animate([{ transform: "none", opacity: 1 }, { opacity: 1, offset: 0.4 }, { transform: zoom, opacity: 0 }], opts)
+        );
+      }
+      await darken.finished.catch(() => {});
+    },
+
+    // Слайд уже скрыт (App.vue) — снимаем следы нырка, чтобы при возврате всё было как прежде.
+    resetDive() {
+      (this._diveAnims || []).forEach((a) => a.cancel());
+      this._diveAnims = null;
+      this.diveOn = false;
+      this.diving = false;
+      this.$refs.device.style.transformOrigin = "";
     },
 
     setFocus(on) {
@@ -475,6 +551,30 @@ export default {
 .back:hover {
   border-color: rgba(255, 255, 255, 0.6);
   background: rgba(255, 255, 255, 0.06);
+}
+
+/* Нырок в экран: копия экрана над всем слайдом, выше неё — затемнение. Позицию и полёт задаёт dive(). */
+.dive {
+  position: absolute;
+  z-index: 4;
+  overflow: hidden;
+  border-radius: 10px; /* как у стекла экрана; растёт вместе с копией */
+  pointer-events: none;
+}
+
+.dive canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.dive-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* Текст только для скринридера: в потоке документа, но не на экране. */
