@@ -75,6 +75,8 @@ import SiteNav from "./SiteNav.vue";
 
 // Перед нырком в экран: экран успевает мигнуть и сменить надпись, устройство — замереть анфас.
 const DIVE_PREP_MS = 380;
+// На столько придерживаем шаг колеса, пока слайд проявляется.
+const HOLD_MS = 250;
 
 // Шаги курса. lines — то, что видно на экране устройства (коротко: там мелко).
 // icon — клавиша устройства, которая включает шаг (см. ICONS в PhoneModel).
@@ -227,7 +229,10 @@ export default {
     // Пока слайд проявляется, устройство не трогаем: оно ещё прозрачное, а текст не дочитан.
     scrollStep(dir) {
       const wantFocus = dir > 0;
-      if (!this.revealed || this.phoneMode !== "3d" || wantFocus === this.focused) return 0;
+      if (this.phoneMode !== "3d") return 0;
+      // Слайд ещё проявляется — шаг вниз придерживаем: иначе быстрая прокрутка проскочит телефон.
+      if (!this.revealed) return wantFocus ? HOLD_MS : 0;
+      if (wantFocus === this.focused) return 0;
       this.setFocus(wantFocus);
       return this.focusMs;
     },

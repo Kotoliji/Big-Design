@@ -26,7 +26,11 @@
         <span class="name">{{ item.title }}</span>
         <span class="text">
           {{ item.text }}
-          <a v-if="item.link" class="link" :href="joinUrl" target="_blank" rel="noopener">{{ item.link }} →</a>
+          <span v-if="item.links" class="links">
+            <a v-for="link in item.links" :key="link.href" class="link" :href="link.href" target="_blank" rel="noopener">
+              {{ link.label }} →
+            </a>
+          </span>
         </span>
       </li>
     </ol>
@@ -58,13 +62,19 @@ import { reviews } from "../../data/reviews.js";
 
 const poster = (slug) => works.find((w) => w.slug === slug)?.previewPoster;
 
+const JOIN_URL = "https://web.tribute.tg/s/Alp"; // как у кнопки Join в меню
+const TELEGRAM_URL = "https://t.me/BBigDesign";
+
 // Четыре части экосистемы — из текста старого сайта («обучение, комьюнити, вызовы и развитие»).
 const ITEMS = [
   { title: "Learning", text: "Courses and mentors: tools first, then style and taste.", image: poster("olga") },
   {
     title: "Community",
     text: "CG Arena club — artists sharing work, feedback and opportunities.",
-    link: "Join CG Arena",
+    links: [
+      { label: "Join CG Arena", href: JOIN_URL },
+      { label: "Telegram channel", href: TELEGRAM_URL },
+    ],
     image: reviews[1].posterWeb,
   },
   { title: "Challenges", text: "Live briefs and contests that push your portfolio forward.", image: poster("nikita") },
@@ -83,7 +93,6 @@ export default {
         "Learning, community, challenges and growth in one place. Here you don't just learn software — you shape your vision, your style and an art director's way of thinking.",
     },
     items: { type: Array, default: () => ITEMS },
-    joinUrl: { type: String, default: "https://web.tribute.tg/s/Alp" }, // как у кнопки Join в меню
     stagger: { type: Number, default: 90 },
   },
   data() {
@@ -255,9 +264,16 @@ export default {
   color: rgba(255, 255, 255, 0.6);
 }
 
+/* Ссылки строки — отдельной строкой под текстом, через промежуток. */
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin-top: 8px;
+}
+
 .link {
   display: inline-block;
-  margin-top: 6px;
   color: #fff;
   text-decoration: none;
   border-bottom: 1px solid rgba(255, 255, 255, 0.35);

@@ -80,7 +80,13 @@
     >
       <div ref="backdrop" class="viewer-backdrop" @click="close"></div>
       <div ref="frame" class="viewer-frame">
-        <video ref="viewerVideo" :muted="muted" loop playsinline preload="none"></video>
+        <video ref="viewerVideo" :muted="muted" loop playsinline preload="none" @loadedmetadata="onViewerMeta"></video>
+        <ScrubBar
+          class="viewer-scrub"
+          :get-video="() => $refs.viewerVideo"
+          :active="openIndex !== null"
+          :label="seekLabel"
+        />
       </div>
       <div ref="bar" class="viewer-bar">
         <p class="viewer-name">
@@ -103,38 +109,22 @@
 <script>
 import SceneLights from "./SceneLights.vue";
 import SiteNav from "./SiteNav.vue";
+import ScrubBar from "./ScrubBar.vue";
 import { works as WORKS } from "../../data/works.js";
+import { buildWaves } from "../../utils/layout.js";
 
-// Места карточек в волне — какую ориентацию место ждёт. Позиции и глубина — в стилях (.slot-N):
+// Места в волне (WAVE_SLOTS в utils/layout.js) — позиции и глубина в стилях .slot-N:
 // s0 — главная по центру, s1/s2 — вертикальные по бокам, s3–s5 — дальние.
-const SLOTS = ["h", "v", "v", "h", "v", "h"];
 const EASE = "cubic-bezier(.65,0,.2,1)";
 const EASE_OUT = "cubic-bezier(.2,.7,.2,1)";
 // Глубина в vh, как и перспектива: тогда раскладка одинакова на экране любой высоты.
 const NEAR = "translateZ(65vh)";   // мимо камеры
 const FAR = "translateZ(-167vh)";  // из темноты
-
-// Делим работы на волны поровну (16 → 6, 5, 5) и раскладываем по местам нужной ориентации.
-// Не хватило вертикальных или горизонтальных — берём из другой стопки.
-function buildWaves(list) {
-  const pools = {
-    v: list.filter((w) => w.orientation === "v"),
-    h: list.filter((w) => w.orientation !== "v"),
-  };
-  const count = Math.ceil(list.length / SLOTS.length);
-  const base = Math.floor(list.length / count);
-  return Array.from({ length: count }, (_, n) => {
-    const size = base + (n < list.length % count ? 1 : 0);
-    return SLOTS.slice(0, size).map((want) => {
-      const pool = pools[want].length ? pools[want] : pools[want === "v" ? "h" : "v"];
-      return pool.shift();
-    });
-  });
-}
+const HOLD_MS = 250;               // на столько придерживаем шаг колеса, пока слайд проявляется
 
 export default {
   name: "WorksGallery",
-  components: { SceneLights, SiteNav },
+  components: { SceneLights, SiteNav, ScrubBar },
   props: {
     works: { type: Array, default: () => WORKS },
     eyebrow: { type: String, default: "Student works" },
@@ -147,6 +137,7 @@ export default {
     prevLabel: { type: String, default: "Previous work" },
     nextLabel: { type: String, default: "Next work" },
     closeLabel: { type: String, default: "Close" },
+    seekLabel: { type: String, default: "Seek video" },
     waveMs: { type: Number, default: 1100 },   // смена волны
     viewerMs: { type: Number, default: 650 },  // карточка вырастает в окно и обратно
     stagger: { type: Number, default: 70 },
@@ -246,8 +237,10 @@ export default {
         this.close();
         return this.viewerMs;
       }
+      // Слайд ещё проявляется — шаг вниз придерживаем, иначе быстрая прокрутка проскакивает волны.
+      if (!this.revealed) return dir > 0 ? HOLD_MS : 0;
       const next = this.wave + dir;
-      if (!this.revealed || next < 0 || next >= this.waves.length) return 0;
+      if (next < 0 || next >= this.waves.length) return 0;
       this.showWave(next, dir);
       return this.waveMs;
     },
@@ -360,6 +353,14 @@ export default {
         video.muted = true;
         video.play().catch(() => {});
       });
+    },
+
+    // Окно открылось по пропорциям постера; когда известен настоящий размер видео и они расходятся —
+    // подправляем. Не посреди раскрытия: смена формы на лету дала бы скачок.
+    onViewerMeta(e) {
+      const { videoWidth: w, videoHeight: h } = e.target;
+      if (!w || !h || this._openFlip || this.openIndex === null) return;
+      if (Math.abs(w / h - this.openRatio) / this.openRatio > 0.02) this.openRatio = w / h;
     },
 
     // Соседняя работа прямо в просмотре (по кругу, в порядке волн). Пока окно раскрывается — ждём:
@@ -711,6 +712,9 @@ export default {
 
 .viewer {
   --frame-w: min(86vw, calc(74vh * var(--ratio)));
+  /* Ширина самой узкой (вертикальной 9:16) работы — панель под окном всегда такой ширины,
+     и кнопки не прыгают при листании горизонтальных и вертикальных работ. */
+  --bar-w: min(86vw, calc(74vh * 9 / 16));
 
   position: absolute;
   inset: 0;
@@ -750,11 +754,18 @@ export default {
   position: relative;
   display: flex;
   align-items: center;
+  flex-wrap: wrap; /* не влезает в одну строку — имя встаёт над кнопками */
   justify-content: space-between;
-  gap: 16px;
-  width: var(--frame-w);
-  min-width: min(520px, 92vw);
+  gap: 10px 16px;
+  width: var(--bar-w);
   animation: fade-in 0.4s ease 0.35s both;
+}
+
+/* Перемотка — тонкая линия по нижнему краю ролика. */
+.viewer-scrub {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 1;
 }
 
 .viewer-name {
@@ -814,9 +825,7 @@ export default {
 
   .viewer {
     --frame-w: min(92vw, calc(70vh * var(--ratio)));
-  }
-  .viewer-bar {
-    flex-wrap: wrap;
+    --bar-w: min(92vw, calc(70vh * 9 / 16));
   }
 }
 

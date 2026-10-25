@@ -20,6 +20,10 @@ const FORCE = process.argv.includes("--force");
 // забирает столько памяти, что падает с "malloc failed".
 const THREADS = "4";
 
+// Часть роликов (720×480 с камеры) — с «вытянутыми» пикселями (SAR 32:27, на экране 16:9).
+// Без этого фильтра превью и веб-копии выходят сплюснутыми 3:2, а окно просмотра — не той формы.
+const SQUARE_PIXELS = "scale=trunc(iw*sar/2)*2:ih,setsar=1";
+
 /* ---------- 1. Превью карт колоды ---------- */
 
 // Короткая сторона превью в пикселях. Кадр колоды ~340px, больше не нужно.
@@ -49,7 +53,7 @@ works.forEach((w, index) => {
   // +faststart — браузер начинает играть, не дожидаясь конца файла.
   encode(input, outVideo, [
     "-t", String(SECONDS),
-    "-vf", `scale=${size}:${size}:force_original_aspect_ratio=increase,scale=trunc(iw/2)*2:trunc(ih/2)*2,fps=30`,
+    "-vf", `${SQUARE_PIXELS},scale=${size}:${size}:force_original_aspect_ratio=increase,scale=trunc(iw/2)*2:trunc(ih/2)*2,fps=30`,
     "-crf", "28", "-profile:v", "main", "-g", "30",
   ]);
 
@@ -85,7 +89,7 @@ works.forEach((w) => {
   const input = path.join(PUBLIC, w.video);
   if (!existsSync(input)) return; // уже предупредили выше
   encode(input, path.join(WEB_DIR, `${w.slug}.mp4`), [
-    "-vf", "scale='min(1920,iw)':'min(1920,ih)':force_original_aspect_ratio=decrease,scale=trunc(iw/2)*2:trunc(ih/2)*2",
+    "-vf", `${SQUARE_PIXELS},scale='min(1920,iw)':'min(1920,ih)':force_original_aspect_ratio=decrease,scale=trunc(iw/2)*2:trunc(ih/2)*2`,
     "-crf", "23", "-profile:v", "high",
   ], { audio: true });
   console.log(`работа: ${w.slug}`);

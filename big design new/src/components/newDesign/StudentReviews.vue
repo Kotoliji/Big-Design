@@ -40,18 +40,23 @@
             autoplay
             playsinline
             @playing="$event.target.classList.add('is-playing')"
-            @timeupdate="onTime"
             @ended="setSound(false)"
           ></video>
           <span v-if="i === active && (!sound || paused)" class="pill" aria-hidden="true">
             <span class="pill-icon">▶</span>{{ sound ? resumeLabel : watchLabel }}
           </span>
-          <span v-if="i === active && sound" class="progress" aria-hidden="true">
-            <i :style="{ transform: `scaleX(${progress})` }"></i>
-          </span>
         </span>
       </button>
     </div>
+
+    <!-- Перемотка — поверх низа центральной карточки, но не внутри неё: карточка — кнопка,
+         а кнопка внутри кнопки недопустима (и клик по полосе включал бы паузу). -->
+    <ScrubBar
+      v-if="sound && revealed"
+      class="review-scrub"
+      :get-video="() => _video"
+      :label="seekLabel"
+    />
 
     <p class="caption reveal">
       <span class="name">{{ reviews[active].name }}</span>
@@ -63,13 +68,15 @@
 <script>
 import SceneLights from "./SceneLights.vue";
 import SiteNav from "./SiteNav.vue";
+import ScrubBar from "./ScrubBar.vue";
 import { reviews as REVIEWS } from "../../data/reviews.js";
+import { ringOffset, wrap } from "../../utils/layout.js";
 
 const SWIPE_PX = 50;
 
 export default {
   name: "StudentReviews",
-  components: { SceneLights, SiteNav },
+  components: { SceneLights, SiteNav, ScrubBar },
   props: {
     reviews: { type: Array, default: () => REVIEWS },
     eyebrow: { type: String, default: "Reviews" },
@@ -78,6 +85,7 @@ export default {
     watchLabel: { type: String, default: "Watch with sound" },
     resumeLabel: { type: String, default: "Resume" },
     pauseLabel: { type: String, default: "Pause" },
+    seekLabel: { type: String, default: "Seek review" },
     stagger: { type: Number, default: 110 },
   },
   data() {
@@ -88,22 +96,16 @@ export default {
       prevActive: 0, // нужен, чтобы заметить «перескок» карточки через край ленты
       sound: false,  // центральный играет со звуком (иначе — тихий повтор)
       paused: false,
-      progress: 0,
     };
   },
   computed: {
     // d — место карточки относительно центра: 0 — центр, ±1 — соседи, ±2 — дальние, 3 — скрыта.
-    // Лента по кругу, поэтому место считаем по кратчайшему пути.
     cards() {
       const n = this.reviews.length;
-      const place = (k) => {
-        const m = ((k % n) + n) % n;
-        return m > n / 2 ? m - n : m;
-      };
       return this.reviews.map((review, i) => {
-        const d = place(i - this.active);
+        const d = ringOffset(i, this.active, n);
         // Карточка перепрыгнула с одного края ленты на другой — двигать её через весь экран не нужно.
-        const jump = Math.abs(d - place(i - this.prevActive)) > 2;
+        const jump = Math.abs(d - ringOffset(i, this.prevActive, n)) > 2;
         return { ...review, d, jump };
       });
     },
@@ -164,8 +166,7 @@ export default {
     },
 
     select(i) {
-      const n = this.reviews.length;
-      const next = ((i % n) + n) % n;
+      const next = wrap(i, this.reviews.length);
       if (next === this.active) return;
       this.stopVideo(); // иначе убранное видео докачивается в фоне
       this.prevActive = this.active;
@@ -201,7 +202,6 @@ export default {
     setSound(on) {
       this.sound = on;
       this.paused = false;
-      this.progress = 0;
       if (!on && this._video) {
         this._video.muted = true;
         this._video.loop = true;
@@ -221,10 +221,6 @@ export default {
       this._video = el;
     },
 
-    onTime(e) {
-      if (this.sound) this.progress = e.target.currentTime / (e.target.duration || 1);
-    },
-
     onKey(e) {
       if (e.key === "ArrowRight") this.select(this.active + 1);
       if (e.key === "ArrowLeft") this.select(this.active - 1);
@@ -233,6 +229,8 @@ export default {
 
     // Горизонтальный свайп листает отзывы; вертикальный остаётся за App (смена слайдов).
     onTouchStart(e) {
+      // Палец на полосе перемотки — это перемотка, а не свайп по ленте.
+      if (e.target.closest(".scrub")) return (this._touch = null);
       this._touch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     },
     onTouchEnd(e) {
@@ -251,6 +249,7 @@ export default {
   --horizon: 74%; /* линия пола — её использует SceneLights */
   --accent: #4d7dff;
   --card-h: 58vh;
+  --card-y: 55%;  /* центр центральной карточки по вертикали */
   --gap: 40vh;    /* шаг ленты до перспективы; в vh — чтобы раскладка не зависела от пропорций экрана */
 
   position: relative;
@@ -321,7 +320,7 @@ export default {
 .card {
   position: absolute;
   left: 50%;
-  top: 55%;
+  top: var(--card-y);
   height: var(--card-h);
   aspect-ratio: 9 / 16;
   padding: 0;
@@ -429,26 +428,20 @@ export default {
   background: rgba(0, 0, 0, 0.6);
 }
 
-.progress {
+/* Перемотка у низа центральной карточки (она 9:16, высота --card-h, центр на --card-y). */
+.review-scrub {
   position: absolute;
-  inset: auto 0 0;
-  z-index: 1;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.progress i {
-  display: block;
-  height: 100%;
-  background: #fff;
-  transform-origin: left;
-  transition: transform 0.25s linear;
+  left: 50%;
+  top: calc(var(--card-y) + var(--card-h) / 2 - 30px);
+  z-index: 12; /* над карточками (их z-index до 10) */
+  width: calc(var(--card-h) * 9 / 16 - 36px);
+  translate: -50% 0;
 }
 
 .caption {
   position: absolute;
   left: 50%;
-  top: calc(55% + var(--card-h) / 2 + 22px);
+  top: calc(var(--card-y) + var(--card-h) / 2 + 22px);
   z-index: 2;
   display: flex;
   align-items: baseline;
@@ -474,12 +467,10 @@ export default {
 @media (max-width: 900px) and (orientation: portrait) {
   .reviews {
     --card-h: 50vh;
-  }
-  .card {
-    top: 57%;
+    --card-y: 57%;
   }
   .caption {
-    top: calc(57% + var(--card-h) / 2 + 16px);
+    top: calc(var(--card-y) + var(--card-h) / 2 + 16px);
   }
 }
 
@@ -487,16 +478,14 @@ export default {
 @media (orientation: landscape) and (max-height: 500px) {
   .reviews {
     --card-h: 64vh;
+    --card-y: 50%;
     --gap: 44vh;
   }
   .head {
     display: none;
   }
-  .card {
-    top: 50%;
-  }
   .caption {
-    top: calc(50% + var(--card-h) / 2 + 10px);
+    top: calc(var(--card-y) + var(--card-h) / 2 + 10px);
   }
 }
 
