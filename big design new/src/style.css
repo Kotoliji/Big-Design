@@ -1,0 +1,35 @@
+/* Шрифты (Jura, Inter, Libertinus Mono) подключены в index.html через <link>. */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  /* Слайды листаются кодом — у страницы своей прокрутки нет.
+     overscroll-behavior: none — чтобы на телефоне свайп не дёргал страницу
+     и не запускал "потяни, чтобы обновить". */
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background-color: #fff;
+  color: #000;
+  font-family: "Libertinus Mono", monospace;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6, p {
+  margin: 0;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+button {
+  font: inherit;
+  user-select: none;
+  -webkit-user-select: none;
+}
